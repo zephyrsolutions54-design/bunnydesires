@@ -1,7 +1,8 @@
+import { forwardRef } from "react";
 import { Heart } from "lucide-react";
 import { Link } from "react-router-dom";
 
-const Footer = () => {
+const Footer = forwardRef<HTMLElement>((props, ref) => {
   const currentYear = new Date().getFullYear();
 
   const footerLinks = {
@@ -32,7 +33,7 @@ const Footer = () => {
   };
 
   return (
-    <footer className="bg-card border-t border-border">
+    <footer ref={ref} className="bg-card border-t border-border">
       <div className="container mx-auto px-4 py-16">
         {/* Main Footer */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
@@ -93,6 +94,8 @@ const Footer = () => {
       </div>
     </footer>
   );
-};
+});
+
+Footer.displayName = "Footer";
 
 export default Footer;
