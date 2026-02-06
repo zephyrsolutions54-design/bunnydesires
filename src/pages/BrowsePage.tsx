@@ -18,10 +18,13 @@ import {
   Circle,
   LogOut,
   Loader2,
+  Coins,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCreators } from "@/hooks/useCreators";
+import { TierBadge } from "@/components/rating/TierBadge";
+import { StarRating } from "@/components/rating/StarRating";
 
 const countries = ["All Countries", "India", "Brazil", "Japan", "Spain", "Ukraine", "Germany", "USA", "UK"];
 
@@ -307,11 +310,15 @@ const BrowsePage = () => {
                               <h3 className="font-display font-semibold text-lg text-white">
                                 {creator.name}
                               </h3>
-                              <div className="flex items-center gap-1 text-bunny-gold">
-                                <Star className="w-4 h-4 fill-current" />
-                                <span className="text-sm font-medium">{Number(creator.rating).toFixed(1)}</span>
-                                <span className="text-white/60 text-xs">({creator.total_ratings})</span>
-                              </div>
+                              <StarRating
+                                rating={Number(creator.rating)}
+                                totalRatings={creator.total_ratings}
+                                size="sm"
+                              />
+                            </div>
+                            <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-black/50 text-bunny-gold text-xs font-medium">
+                              <Coins className="w-3 h-3" />
+                              {creator.current_earnings_rate || 6}/min
                             </div>
                           </div>
                         </div>
@@ -323,7 +330,7 @@ const BrowsePage = () => {
                           {creator.bio || "Ready to chat! 💬"}
                         </p>
                         
-                        <div className="flex items-center gap-2 mb-4">
+                        <div className="flex items-center gap-2 mb-4 flex-wrap">
                           <Badge variant="secondary" className="text-xs">
                             {creator.language}
                           </Badge>
@@ -332,6 +339,7 @@ const BrowsePage = () => {
                               Verified
                             </Badge>
                           )}
+                          <TierBadge tier={creator.rating_tier || "standard"} size="sm" />
                         </div>
 
                         <div className="flex gap-2">

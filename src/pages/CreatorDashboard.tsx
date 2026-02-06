@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Heart,
@@ -15,15 +13,17 @@ import {
   LogOut,
   User,
   Settings,
-  Bell,
   Circle,
   ArrowUpRight,
   Loader2,
+  Coins,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { RatingDashboard } from "@/components/rating/RatingDashboard";
+import { TierBadge } from "@/components/rating/TierBadge";
 
 const CreatorDashboard = () => {
   const navigate = useNavigate();
@@ -159,12 +159,19 @@ const CreatorDashboard = () => {
       <main className="container mx-auto px-4 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
-          <h1 className="font-display text-3xl font-bold mb-2">
-            Welcome back, {profile?.name || "Creator"}! 👋
-          </h1>
-          <p className="text-muted-foreground">
-            Here's an overview of your earnings and activity.
-          </p>
+          <div className="flex items-center gap-3 mb-2">
+            <h1 className="font-display text-3xl font-bold">
+              Welcome back, {profile?.name || "Creator"}! 👋
+            </h1>
+            <TierBadge tier={profile?.rating_tier || "standard"} size="lg" />
+          </div>
+          <div className="flex items-center gap-4 text-muted-foreground">
+            <span>Here's an overview of your earnings and activity.</span>
+            <div className="flex items-center gap-1 text-bunny-gold">
+              <Coins className="w-4 h-4" />
+              <span className="font-medium">{profile?.current_earnings_rate || 6} coins/min</span>
+            </div>
+          </div>
         </div>
 
         {/* Stats Grid */}
@@ -264,6 +271,13 @@ const CreatorDashboard = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Rating Dashboard */}
+        {profile && (
+          <div className="mb-8">
+            <RatingDashboard userId={profile.id} />
+          </div>
+        )}
 
         {/* Recent Activity Placeholder */}
         <Card className="bg-card border-border/50">

@@ -23,6 +23,9 @@ export type Database = {
           end_time: string | null
           id: string
           initiator_id: string
+          rated_by_user: boolean | null
+          rating_given: number | null
+          rating_submitted_at: string | null
           receiver_id: string
           start_time: string | null
           status: Database["public"]["Enums"]["call_status"]
@@ -35,6 +38,9 @@ export type Database = {
           end_time?: string | null
           id?: string
           initiator_id: string
+          rated_by_user?: boolean | null
+          rating_given?: number | null
+          rating_submitted_at?: string | null
           receiver_id: string
           start_time?: string | null
           status?: Database["public"]["Enums"]["call_status"]
@@ -47,6 +53,9 @@ export type Database = {
           end_time?: string | null
           id?: string
           initiator_id?: string
+          rated_by_user?: boolean | null
+          rating_given?: number | null
+          rating_submitted_at?: string | null
           receiver_id?: string
           start_time?: string | null
           status?: Database["public"]["Enums"]["call_status"]
@@ -233,6 +242,7 @@ export type Database = {
           bio: string | null
           country: string | null
           created_at: string
+          current_earnings_rate: number | null
           email: string
           gender: Database["public"]["Enums"]["user_gender"]
           id: string
@@ -241,6 +251,8 @@ export type Database = {
           language: string | null
           name: string
           rating: number | null
+          rating_breakdown: Json | null
+          rating_tier: Database["public"]["Enums"]["rating_tier"] | null
           total_ratings: number | null
           updated_at: string
         }
@@ -249,6 +261,7 @@ export type Database = {
           bio?: string | null
           country?: string | null
           created_at?: string
+          current_earnings_rate?: number | null
           email: string
           gender: Database["public"]["Enums"]["user_gender"]
           id: string
@@ -257,6 +270,8 @@ export type Database = {
           language?: string | null
           name: string
           rating?: number | null
+          rating_breakdown?: Json | null
+          rating_tier?: Database["public"]["Enums"]["rating_tier"] | null
           total_ratings?: number | null
           updated_at?: string
         }
@@ -265,6 +280,7 @@ export type Database = {
           bio?: string | null
           country?: string | null
           created_at?: string
+          current_earnings_rate?: number | null
           email?: string
           gender?: Database["public"]["Enums"]["user_gender"]
           id?: string
@@ -273,10 +289,50 @@ export type Database = {
           language?: string | null
           name?: string
           rating?: number | null
+          rating_breakdown?: Json | null
+          rating_tier?: Database["public"]["Enums"]["rating_tier"] | null
           total_ratings?: number | null
           updated_at?: string
         }
         Relationships: []
+      }
+      ratings: {
+        Row: {
+          call_id: string
+          created_at: string
+          feedback: string | null
+          from_user_id: string
+          id: string
+          stars: number
+          to_user_id: string
+        }
+        Insert: {
+          call_id: string
+          created_at?: string
+          feedback?: string | null
+          from_user_id: string
+          id?: string
+          stars: number
+          to_user_id: string
+        }
+        Update: {
+          call_id?: string
+          created_at?: string
+          feedback?: string | null
+          from_user_id?: string
+          id?: string
+          stars?: number
+          to_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ratings_call_id_fkey"
+            columns: ["call_id"]
+            isOneToOne: true
+            referencedRelation: "calls"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       transactions: {
         Row: {
@@ -425,6 +481,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_earnings_rate: {
+        Args: { avg_rating: number }
+        Returns: {
+          coins_per_min: number
+          tier: Database["public"]["Enums"]["rating_tier"]
+        }[]
+      }
       get_user_gender: {
         Args: { user_id: string }
         Returns: Database["public"]["Enums"]["user_gender"]
@@ -435,6 +498,7 @@ export type Database = {
     }
     Enums: {
       call_status: "pending" | "active" | "ended" | "missed" | "declined"
+      rating_tier: "platinum" | "gold" | "silver" | "bronze" | "standard"
       transaction_type:
         | "coin_purchase"
         | "call_deduction"
@@ -572,6 +636,7 @@ export const Constants = {
   public: {
     Enums: {
       call_status: ["pending", "active", "ended", "missed", "declined"],
+      rating_tier: ["platinum", "gold", "silver", "bronze", "standard"],
       transaction_type: [
         "coin_purchase",
         "call_deduction",
