@@ -1,4 +1,3 @@
-import { forwardRef } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Heart, Sparkles, Users, Globe, Shield, Zap } from "lucide-react";
@@ -35,9 +34,9 @@ const benefits = [
   },
 ];
 
-const CTASection = forwardRef<HTMLElement>((props, ref) => {
+const CTASection = () => {
   return (
-    <section ref={ref} className="py-24 relative overflow-hidden bg-background">
+    <section className="py-24 relative overflow-hidden bg-background">
       {/* Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-secondary/5" />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-primary/5 blur-3xl" />
@@ -164,8 +163,6 @@ const CTASection = forwardRef<HTMLElement>((props, ref) => {
       </div>
     </section>
   );
-});
-
-CTASection.displayName = "CTASection";
+};
 
 export default CTASection;
