@@ -15,21 +15,32 @@ import {
   Users,
   Check
 } from "lucide-react";
-import { Link, useSearchParams, useNavigate } from "react-router-dom";
+import { Link, useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { z } from "zod";
 
 type AuthMode = "signin" | "signup";
 type Gender = "male" | "female" | null;
 
+// Validation schemas
+const emailSchema = z.string().email("Please enter a valid email address");
+const passwordSchema = z.string().min(6, "Password must be at least 6 characters");
+const nameSchema = z.string().min(2, "Name must be at least 2 characters");
+
 const AuthPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user, signUp, signIn, loading: authLoading } = useAuth();
+  
   const [mode, setMode] = useState<AuthMode>(
     searchParams.get("mode") === "signup" ? "signup" : "signin"
   );
   const [showPassword, setShowPassword] = useState(false);
   const [gender, setGender] = useState<Gender>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Form state
   const [formData, setFormData] = useState({
@@ -39,43 +50,116 @@ const AuthPage = () => {
     confirmPassword: "",
   });
 
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user && !authLoading) {
+      const from = (location.state as { from?: { pathname: string } })?.from?.pathname || "/browse";
+      navigate(from, { replace: true });
+    }
+  }, [user, authLoading, navigate, location]);
+
   useEffect(() => {
     const newMode = searchParams.get("mode") === "signup" ? "signup" : "signin";
     setMode(newMode);
   }, [searchParams]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [name]: value
     }));
+    // Clear error when user types
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: "" }));
+    }
+  };
+
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {};
+
+    // Validate email
+    const emailResult = emailSchema.safeParse(formData.email);
+    if (!emailResult.success) {
+      newErrors.email = emailResult.error.errors[0].message;
+    }
+
+    // Validate password
+    const passwordResult = passwordSchema.safeParse(formData.password);
+    if (!passwordResult.success) {
+      newErrors.password = passwordResult.error.errors[0].message;
+    }
+
+    if (mode === "signup") {
+      // Validate name
+      const nameResult = nameSchema.safeParse(formData.name);
+      if (!nameResult.success) {
+        newErrors.name = nameResult.error.errors[0].message;
+      }
+
+      // Validate confirm password
+      if (formData.password !== formData.confirmPassword) {
+        newErrors.confirmPassword = "Passwords don't match";
+      }
+
+      // Validate gender
+      if (!gender) {
+        newErrors.gender = "Please select your gender";
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+
     setIsLoading(true);
 
-    // Simulate auth (will be replaced with real auth)
-    await new Promise(resolve => setTimeout(resolve, 1500));
-
-    if (mode === "signup") {
-      if (formData.password !== formData.confirmPassword) {
-        toast.error("Passwords don't match!");
-        setIsLoading(false);
-        return;
+    try {
+      if (mode === "signup") {
+        const { error } = await signUp(formData.email, formData.password, formData.name, gender!);
+        
+        if (error) {
+          if (error.message.includes("already registered")) {
+            toast.error("This email is already registered. Please sign in instead.");
+          } else {
+            toast.error(error.message);
+          }
+          setIsLoading(false);
+          return;
+        }
+        
+        toast.success("Account created! Please check your email to verify your account.");
+      } else {
+        const { error } = await signIn(formData.email, formData.password);
+        
+        if (error) {
+          if (error.message.includes("Invalid login credentials")) {
+            toast.error("Invalid email or password. Please try again.");
+          } else if (error.message.includes("Email not confirmed")) {
+            toast.error("Please verify your email address before signing in.");
+          } else {
+            toast.error(error.message);
+          }
+          setIsLoading(false);
+          return;
+        }
+        
+        toast.success("Welcome back!");
+        const from = (location.state as { from?: { pathname: string } })?.from?.pathname || "/browse";
+        navigate(from, { replace: true });
       }
-      if (!gender) {
-        toast.error("Please select your gender");
-        setIsLoading(false);
-        return;
-      }
-      toast.success("Account created! Please enable backend to activate authentication.");
-    } else {
-      toast.success("Welcome back! Please enable backend to activate authentication.");
+    } catch (err) {
+      toast.error("An unexpected error occurred. Please try again.");
     }
 
     setIsLoading(false);
-    navigate("/browse");
   };
 
   const genderOptions = [

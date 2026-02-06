@@ -12,110 +12,53 @@ import {
   Video,
   Gift,
   Wallet,
-  Menu,
   X,
   Globe,
   Sparkles,
   Circle,
+  LogOut,
+  Loader2,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { useCreators } from "@/hooks/useCreators";
 
-// Mock data for creators
-const mockCreators = [
-  {
-    id: 1,
-    name: "Sofia",
-    age: 24,
-    country: "Brazil",
-    countryCode: "BR",
-    languages: ["Portuguese", "English"],
-    rating: 4.9,
-    reviews: 234,
-    isOnline: true,
-    image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=500&fit=crop",
-    bio: "Love making new friends from around the world! 🌍",
-  },
-  {
-    id: 2,
-    name: "Yuki",
-    age: 22,
-    country: "Japan",
-    countryCode: "JP",
-    languages: ["Japanese", "English"],
-    rating: 4.8,
-    reviews: 189,
-    isOnline: true,
-    image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=500&fit=crop",
-    bio: "Let's talk about anime and culture! ✨",
-  },
-  {
-    id: 3,
-    name: "Maria",
-    age: 26,
-    country: "Spain",
-    countryCode: "ES",
-    languages: ["Spanish", "English"],
-    rating: 4.7,
-    reviews: 156,
-    isOnline: false,
-    image: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=400&h=500&fit=crop",
-    bio: "Passionate about travel and good conversations 🌸",
-  },
-  {
-    id: 4,
-    name: "Anna",
-    age: 23,
-    country: "Ukraine",
-    countryCode: "UA",
-    languages: ["Ukrainian", "Russian", "English"],
-    rating: 4.9,
-    reviews: 312,
-    isOnline: true,
-    image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&h=500&fit=crop",
-    bio: "Artist and dreamer 🎨 Let's create memories!",
-  },
-  {
-    id: 5,
-    name: "Lisa",
-    age: 25,
-    country: "Germany",
-    countryCode: "DE",
-    languages: ["German", "English"],
-    rating: 4.6,
-    reviews: 98,
-    isOnline: true,
-    image: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&h=500&fit=crop",
-    bio: "Coffee lover ☕ Music enthusiast 🎵",
-  },
-  {
-    id: 6,
-    name: "Priya",
-    age: 24,
-    country: "India",
-    countryCode: "IN",
-    languages: ["Hindi", "English"],
-    rating: 4.8,
-    reviews: 167,
-    isOnline: false,
-    image: "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=400&h=500&fit=crop",
-    bio: "Dancer and bookworm 📚 Always up for fun chats!",
-  },
+const countries = ["All Countries", "India", "Brazil", "Japan", "Spain", "Ukraine", "Germany", "USA", "UK"];
+
+// Placeholder images for creators without avatars
+const placeholderImages = [
+  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=500&fit=crop",
+  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=500&fit=crop",
+  "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=400&h=500&fit=crop",
+  "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&h=500&fit=crop",
+  "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&h=500&fit=crop",
+  "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=400&h=500&fit=crop",
 ];
 
-const countries = ["All Countries", "Brazil", "Japan", "Spain", "Ukraine", "Germany", "India", "USA", "UK"];
+const getPlaceholderImage = (index: number) => {
+  return placeholderImages[index % placeholderImages.length];
+};
 
 const BrowsePage = () => {
+  const navigate = useNavigate();
+  const { user, profile, wallet, signOut } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCountry, setSelectedCountry] = useState("All Countries");
   const [showOnlineOnly, setShowOnlineOnly] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  const filteredCreators = mockCreators.filter((creator) => {
-    const matchesSearch = creator.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCountry = selectedCountry === "All Countries" || creator.country === selectedCountry;
-    const matchesOnline = !showOnlineOnly || creator.isOnline;
-    return matchesSearch && matchesCountry && matchesOnline;
+  const { creators, loading } = useCreators({
+    country: selectedCountry,
+    onlineOnly: showOnlineOnly,
+    searchQuery,
   });
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+  };
+
+  const onlineCount = creators.filter((c) => c.is_online).length;
 
   return (
     <div className="min-h-screen bg-background">
@@ -147,17 +90,23 @@ const BrowsePage = () => {
 
             {/* Actions */}
             <div className="flex items-center gap-3">
-              {/* Wallet */}
-              <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl bg-bunny-gold/10 border border-bunny-gold/20">
-                <Wallet className="w-4 h-4 text-bunny-gold" />
-                <span className="font-semibold text-bunny-gold">1,200</span>
-              </div>
+              {/* Wallet - only show for male users */}
+              {profile?.gender === "male" && (
+                <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl bg-bunny-gold/10 border border-bunny-gold/20">
+                  <Wallet className="w-4 h-4 text-bunny-gold" />
+                  <span className="font-semibold text-bunny-gold">
+                    {wallet?.balance?.toLocaleString() || 0}
+                  </span>
+                </div>
+              )}
 
-              {/* Buy Coins */}
-              <Button variant="hero" size="sm" className="hidden sm:flex">
-                <Sparkles className="w-4 h-4 mr-1" />
-                Buy Coins
-              </Button>
+              {/* Buy Coins - only show for male users */}
+              {profile?.gender === "male" && (
+                <Button variant="hero" size="sm" className="hidden sm:flex">
+                  <Sparkles className="w-4 h-4 mr-1" />
+                  Buy Coins
+                </Button>
+              )}
 
               {/* Mobile Filter Toggle */}
               <Button
@@ -169,10 +118,26 @@ const BrowsePage = () => {
                 {isSidebarOpen ? <X className="w-5 h-5" /> : <Filter className="w-5 h-5" />}
               </Button>
 
+              {/* Sign Out */}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleSignOut}
+                title="Sign Out"
+              >
+                <LogOut className="w-5 h-5" />
+              </Button>
+
               {/* Profile */}
               <Link to="/profile">
-                <div className="w-9 h-9 rounded-full gradient-primary flex items-center justify-center">
-                  <span className="text-sm font-semibold text-primary-foreground">JD</span>
+                <div className="w-9 h-9 rounded-full gradient-primary flex items-center justify-center overflow-hidden">
+                  {profile?.avatar_url ? (
+                    <img src={profile.avatar_url} alt={profile.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-sm font-semibold text-primary-foreground">
+                      {profile?.name?.charAt(0)?.toUpperCase() || "U"}
+                    </span>
+                  )}
                 </div>
               </Link>
             </div>
@@ -277,98 +242,117 @@ const BrowsePage = () => {
                   Discover Amazing People
                 </h1>
                 <p className="text-muted-foreground text-sm">
-                  {filteredCreators.filter((c) => c.isOnline).length} online now
+                  {onlineCount} online now
                 </p>
               </div>
             </div>
 
+            {/* Loading State */}
+            {loading && (
+              <div className="flex items-center justify-center py-20">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              </div>
+            )}
+
+            {/* Empty State */}
+            {!loading && creators.length === 0 && (
+              <div className="text-center py-20">
+                <p className="text-muted-foreground">No creators found matching your filters.</p>
+              </div>
+            )}
+
             {/* Creators Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {filteredCreators.map((creator, index) => (
-                <motion.div
-                  key={creator.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.05 }}
-                  className="group"
-                >
-                  <div className="bg-card rounded-2xl overflow-hidden shadow-card border border-border/50 hover:shadow-glow transition-all duration-300">
-                    {/* Image */}
-                    <div className="relative aspect-[4/5] overflow-hidden">
-                      <img
-                        src={creator.image}
-                        alt={creator.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                      
-                      {/* Online Badge */}
-                      <div className={`absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
-                        creator.isOnline
-                          ? "bg-green-500/20 text-green-400 border border-green-500/30"
-                          : "bg-muted/80 text-muted-foreground"
-                      }`}>
-                        <Circle className={`w-2 h-2 ${creator.isOnline ? "fill-green-400" : "fill-muted-foreground"}`} />
-                        {creator.isOnline ? "Online" : "Offline"}
-                      </div>
+            {!loading && creators.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                {creators.map((creator, index) => (
+                  <motion.div
+                    key={creator.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.05 }}
+                    className="group"
+                  >
+                    <div className="bg-card rounded-2xl overflow-hidden shadow-card border border-border/50 hover:shadow-glow transition-all duration-300">
+                      {/* Image */}
+                      <div className="relative aspect-[4/5] overflow-hidden">
+                        <img
+                          src={creator.avatar_url || getPlaceholderImage(index)}
+                          alt={creator.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                        
+                        {/* Online Badge */}
+                        <div className={`absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+                          creator.is_online
+                            ? "bg-green-500/20 text-green-400 border border-green-500/30"
+                            : "bg-muted/80 text-muted-foreground"
+                        }`}>
+                          <Circle className={`w-2 h-2 ${creator.is_online ? "fill-green-400" : "fill-muted-foreground"}`} />
+                          {creator.is_online ? "Online" : "Offline"}
+                        </div>
 
-                      {/* Country Badge */}
-                      <div className="absolute top-3 right-3 flex items-center gap-1 px-2.5 py-1 rounded-full bg-background/80 backdrop-blur-sm text-xs font-medium">
-                        <MapPin className="w-3 h-3" />
-                        {creator.country}
-                      </div>
+                        {/* Country Badge */}
+                        <div className="absolute top-3 right-3 flex items-center gap-1 px-2.5 py-1 rounded-full bg-background/80 backdrop-blur-sm text-xs font-medium">
+                          <MapPin className="w-3 h-3" />
+                          {creator.country}
+                        </div>
 
-                      {/* Gradient Overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                        {/* Gradient Overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
 
-                      {/* Bottom Info */}
-                      <div className="absolute bottom-0 left-0 right-0 p-4">
-                        <div className="flex items-end justify-between">
-                          <div>
-                            <h3 className="font-display font-semibold text-lg text-white">
-                              {creator.name}, {creator.age}
-                            </h3>
-                            <div className="flex items-center gap-1 text-yellow-400">
-                              <Star className="w-4 h-4 fill-current" />
-                              <span className="text-sm font-medium">{creator.rating}</span>
-                              <span className="text-white/60 text-xs">({creator.reviews})</span>
+                        {/* Bottom Info */}
+                        <div className="absolute bottom-0 left-0 right-0 p-4">
+                          <div className="flex items-end justify-between">
+                            <div>
+                              <h3 className="font-display font-semibold text-lg text-white">
+                                {creator.name}
+                              </h3>
+                              <div className="flex items-center gap-1 text-bunny-gold">
+                                <Star className="w-4 h-4 fill-current" />
+                                <span className="text-sm font-medium">{Number(creator.rating).toFixed(1)}</span>
+                                <span className="text-white/60 text-xs">({creator.total_ratings})</span>
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
-                    </div>
 
-                    {/* Actions */}
-                    <div className="p-4">
-                      <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                        {creator.bio}
-                      </p>
-                      
-                      <div className="flex items-center gap-2 mb-4">
-                        {creator.languages.slice(0, 2).map((lang) => (
-                          <Badge key={lang} variant="secondary" className="text-xs">
-                            {lang}
+                      {/* Actions */}
+                      <div className="p-4">
+                        <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                          {creator.bio || "Ready to chat! 💬"}
+                        </p>
+                        
+                        <div className="flex items-center gap-2 mb-4">
+                          <Badge variant="secondary" className="text-xs">
+                            {creator.language}
                           </Badge>
-                        ))}
-                      </div>
+                          {creator.is_verified && (
+                            <Badge variant="secondary" className="text-xs bg-primary/10 text-primary border-primary/20">
+                              Verified
+                            </Badge>
+                          )}
+                        </div>
 
-                      <div className="flex gap-2">
-                        <Button 
-                          variant="hero" 
-                          className="flex-1"
-                          disabled={!creator.isOnline}
-                        >
-                          <Video className="w-4 h-4 mr-1" />
-                          Video Chat
-                        </Button>
-                        <Button variant="outline" size="icon">
-                          <Gift className="w-4 h-4" />
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button 
+                            variant="hero" 
+                            className="flex-1"
+                            disabled={!creator.is_online}
+                          >
+                            <Video className="w-4 h-4 mr-1" />
+                            Video Chat
+                          </Button>
+                          <Button variant="outline" size="icon">
+                            <Gift className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
           </main>
         </div>
       </div>
