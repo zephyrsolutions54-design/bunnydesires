@@ -6,6 +6,69 @@
 
 @layer base {
   :root {
+    /* Default to dark mode with black background */
+    --background: 0 0% 0%;
+    --foreground: 340 30% 95%;
+
+    --card: 0 0% 6%;
+    --card-foreground: 340 30% 95%;
+
+    --popover: 0 0% 6%;
+    --popover-foreground: 340 30% 95%;
+
+    --primary: 340 82% 65%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 280 50% 55%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 0 0% 12%;
+    --muted-foreground: 340 20% 65%;
+
+    --accent: 340 50% 15%;
+    --accent-foreground: 340 82% 75%;
+
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 340 82% 65%;
+
+    --radius: 1rem;
+
+    /* Custom Bunny Desires tokens */
+    --bunny-pink: 340 82% 65%;
+    --bunny-pink-light: 340 40% 20%;
+    --bunny-purple: 280 50% 55%;
+    --bunny-purple-dark: 280 55% 35%;
+    --bunny-gold: 45 100% 60%;
+    --bunny-rose: 350 90% 70%;
+    
+    /* Gradients - Dark mode optimized */
+    --gradient-primary: linear-gradient(135deg, hsl(340 82% 65%), hsl(280 50% 55%));
+    --gradient-hero: linear-gradient(135deg, hsl(0 0% 0%), hsl(340 30% 8%), hsl(280 25% 6%));
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 8%), hsl(0 0% 5%));
+    --gradient-button: linear-gradient(135deg, hsl(340 82% 60%), hsl(280 50% 50%));
+    --gradient-button-hover: linear-gradient(135deg, hsl(340 82% 55%), hsl(280 50% 45%));
+    
+    /* Shadows */
+    --shadow-soft: 0 4px 20px -4px hsl(340 82% 65% / 0.3);
+    --shadow-glow: 0 0 40px hsl(340 82% 65% / 0.25);
+    --shadow-card: 0 10px 40px -10px hsl(0 0% 0% / 0.7);
+
+    --sidebar-background: 0 0% 4%;
+    --sidebar-foreground: 340 30% 90%;
+    --sidebar-primary: 340 82% 65%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 340 40% 15%;
+    --sidebar-accent-foreground: 340 82% 75%;
+    --sidebar-border: 0 0% 15%;
+    --sidebar-ring: 340 82% 65%;
+  }
+
+  /* Light mode - optional override */
+  .light {
     --background: 0 0% 100%;
     --foreground: 280 20% 15%;
 
@@ -34,24 +97,17 @@
     --input: 340 30% 90%;
     --ring: 340 82% 65%;
 
-    --radius: 1rem;
-
-    /* Custom Bunny Desires tokens */
     --bunny-pink: 340 82% 65%;
     --bunny-pink-light: 340 85% 92%;
     --bunny-purple: 280 60% 65%;
     --bunny-purple-dark: 280 65% 45%;
-    --bunny-gold: 45 100% 60%;
-    --bunny-rose: 350 90% 70%;
     
-    /* Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(340 82% 65%), hsl(280 60% 65%));
     --gradient-hero: linear-gradient(135deg, hsl(340 85% 92%), hsl(280 70% 92%), hsl(340 82% 95%));
     --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(340 30% 98%));
     --gradient-button: linear-gradient(135deg, hsl(340 82% 60%), hsl(280 60% 55%));
     --gradient-button-hover: linear-gradient(135deg, hsl(340 82% 55%), hsl(280 60% 50%));
     
-    /* Shadows */
     --shadow-soft: 0 4px 20px -4px hsl(340 82% 65% / 0.25);
     --shadow-glow: 0 0 40px hsl(340 82% 65% / 0.3);
     --shadow-card: 0 10px 40px -10px hsl(280 60% 65% / 0.15);
@@ -63,60 +119,6 @@
     --sidebar-accent: 340 70% 95%;
     --sidebar-accent-foreground: 340 82% 45%;
     --sidebar-border: 340 30% 90%;
-    --sidebar-ring: 340 82% 65%;
-  }
-
-  .dark {
-    --background: 280 30% 8%;
-    --foreground: 340 30% 95%;
-
-    --card: 280 25% 12%;
-    --card-foreground: 340 30% 95%;
-
-    --popover: 280 25% 12%;
-    --popover-foreground: 340 30% 95%;
-
-    --primary: 340 82% 65%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 280 50% 55%;
-    --secondary-foreground: 0 0% 100%;
-
-    --muted: 280 20% 18%;
-    --muted-foreground: 340 20% 65%;
-
-    --accent: 340 50% 20%;
-    --accent-foreground: 340 82% 75%;
-
-    --destructive: 0 62% 50%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 280 20% 20%;
-    --input: 280 20% 20%;
-    --ring: 340 82% 65%;
-
-    --bunny-pink: 340 82% 65%;
-    --bunny-pink-light: 340 40% 25%;
-    --bunny-purple: 280 50% 55%;
-    --bunny-purple-dark: 280 55% 35%;
-    
-    --gradient-primary: linear-gradient(135deg, hsl(340 82% 65%), hsl(280 50% 55%));
-    --gradient-hero: linear-gradient(135deg, hsl(280 30% 12%), hsl(340 30% 15%), hsl(280 25% 10%));
-    --gradient-card: linear-gradient(145deg, hsl(280 25% 14%), hsl(280 20% 12%));
-    --gradient-button: linear-gradient(135deg, hsl(340 82% 60%), hsl(280 50% 50%));
-    --gradient-button-hover: linear-gradient(135deg, hsl(340 82% 55%), hsl(280 50% 45%));
-    
-    --shadow-soft: 0 4px 20px -4px hsl(340 82% 65% / 0.3);
-    --shadow-glow: 0 0 40px hsl(340 82% 65% / 0.2);
-    --shadow-card: 0 10px 40px -10px hsl(0 0% 0% / 0.5);
-
-    --sidebar-background: 280 25% 10%;
-    --sidebar-foreground: 340 30% 90%;
-    --sidebar-primary: 340 82% 65%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 340 40% 20%;
-    --sidebar-accent-foreground: 340 82% 75%;
-    --sidebar-border: 280 20% 18%;
     --sidebar-ring: 340 82% 65%;
   }
 }
@@ -177,12 +179,12 @@
   }
 
   .glass {
-    background: hsl(0 0% 100% / 0.8);
+    background: hsl(0 0% 5% / 0.85);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
   }
 
-  .dark .glass {
-    background: hsl(280 25% 12% / 0.8);
+  .light .glass {
+    background: hsl(0 0% 100% / 0.8);
   }
 }
