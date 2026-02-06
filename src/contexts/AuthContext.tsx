@@ -3,6 +3,15 @@ import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
 type UserGender = "male" | "female";
+type RatingTier = "platinum" | "gold" | "silver" | "bronze" | "standard";
+
+interface RatingBreakdown {
+  five_stars: number;
+  four_stars: number;
+  three_stars: number;
+  two_stars: number;
+  one_star: number;
+}
 
 interface Profile {
   id: string;
@@ -17,6 +26,9 @@ interface Profile {
   is_verified: boolean;
   rating: number;
   total_ratings: number;
+  rating_breakdown: RatingBreakdown | null;
+  rating_tier: RatingTier;
+  current_earnings_rate: number;
   created_at: string;
   updated_at: string;
 }
@@ -76,7 +88,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      setProfile(profileData as Profile);
+      // Parse rating_breakdown from JSON
+      const rawBreakdown = profileData?.rating_breakdown as Record<string, number> | null;
+      const parsedProfile: Profile = {
+        ...profileData,
+        rating_breakdown: rawBreakdown ? {
+          five_stars: rawBreakdown.five_stars ?? 0,
+          four_stars: rawBreakdown.four_stars ?? 0,
+          three_stars: rawBreakdown.three_stars ?? 0,
+          two_stars: rawBreakdown.two_stars ?? 0,
+          one_star: rawBreakdown.one_star ?? 0,
+        } : null,
+        rating_tier: (profileData.rating_tier as RatingTier) || 'standard',
+        current_earnings_rate: profileData.current_earnings_rate ?? 6,
+      };
+
+      setProfile(parsedProfile);
 
       // Fetch wallet
       const { data: walletData, error: walletError } = await supabase

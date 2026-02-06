@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
+type RatingTier = "platinum" | "gold" | "silver" | "bronze" | "standard";
+
 interface Creator {
   id: string;
   name: string;
@@ -13,6 +15,8 @@ interface Creator {
   is_verified: boolean;
   rating: number;
   total_ratings: number;
+  rating_tier: RatingTier;
+  current_earnings_rate: number;
 }
 
 interface UseCreatorsOptions {
@@ -36,7 +40,7 @@ export function useCreators(options: UseCreatorsOptions = {}) {
       try {
         let query = supabase
           .from("profiles")
-          .select("id, name, gender, avatar_url, bio, country, language, is_online, is_verified, rating, total_ratings")
+          .select("id, name, gender, avatar_url, bio, country, language, is_online, is_verified, rating, total_ratings, rating_tier, current_earnings_rate")
           .eq("gender", "female")
           .order("is_online", { ascending: false })
           .order("rating", { ascending: false });
