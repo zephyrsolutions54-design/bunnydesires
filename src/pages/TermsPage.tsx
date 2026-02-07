@@ -1,147 +1,156 @@
-import { Heart, ArrowLeft } from "lucide-react";
-import { Link } from "react-router-dom";
+import PageLayout from "@/components/landing/PageLayout";
 
 const TermsPage = () => {
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-50 glass border-b border-border/50">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
-            <Link to="/" className="flex items-center gap-2">
-              <Heart className="w-7 h-7 text-primary fill-primary" />
-              <span className="font-display font-bold text-lg text-gradient">
-                Bunny Desires
-              </span>
-            </Link>
-          </div>
-        </div>
-      </header>
+    <PageLayout title="Terms of Service" lastUpdated="February 2026">
+      <section className="space-y-4">
+        <h2 className="font-display text-2xl font-semibold">1. Acceptance of Terms</h2>
+        <p className="text-muted-foreground">
+          By accessing or using Bunny Desires, you agree to be bound by these Terms of Service
+          and our Privacy Policy. If you do not agree, please do not use our services.
+        </p>
+      </section>
 
-      <main className="container mx-auto px-4 py-12 max-w-4xl">
-        <Link 
-          to="/" 
-          className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors mb-6"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to home
-        </Link>
+      <section className="space-y-4">
+        <h2 className="font-display text-2xl font-semibold">2. Eligibility</h2>
+        <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
+          <li>Must be 18 years or older</li>
+          <li>Must provide accurate registration information</li>
+          <li>Must comply with Indian laws</li>
+          <li>Prohibited persons: Convicted sex offenders, previously banned users</li>
+        </ul>
+      </section>
 
-        <h1 className="font-display text-4xl font-bold mb-8">Terms of Service</h1>
-        
-        <div className="prose prose-slate dark:prose-invert max-w-none space-y-6">
-          <p className="text-muted-foreground">
-            Last updated: February 2026
-          </p>
+      <section className="space-y-4">
+        <h2 className="font-display text-2xl font-semibold">3. Account Types</h2>
+        <h3 className="font-semibold text-lg">User Accounts (Men)</h3>
+        <ul className="list-disc pl-6 space-y-1 text-muted-foreground">
+          <li>Purchase coins for video chat</li>
+          <li>Rate and send gifts to creators</li>
+          <li>Responsible for account security</li>
+        </ul>
+        <h3 className="font-semibold text-lg">Creator Accounts (Women)</h3>
+        <ul className="list-disc pl-6 space-y-1 text-muted-foreground">
+          <li>Earn from video chat time and gifts</li>
+          <li>Must maintain community standards</li>
+          <li>Earnings subject to rating-based tier system</li>
+        </ul>
+      </section>
 
-          <section className="space-y-4">
-            <h2 className="font-display text-2xl font-semibold">1. Acceptance of Terms</h2>
-            <p className="text-muted-foreground">
-              By accessing or using Bunny Desires, you agree to be bound by these Terms of Service. 
-              If you do not agree to these terms, please do not use our services.
-            </p>
-          </section>
+      <section className="space-y-4">
+        <h2 className="font-display text-2xl font-semibold">4. Payment Terms</h2>
+        <h3 className="font-semibold text-lg">Coin Purchases</h3>
+        <ul className="list-disc pl-6 space-y-1 text-muted-foreground">
+          <li>Non-refundable except in cases of technical failure</li>
+          <li>Prices listed in INR, inclusive of applicable GST</li>
+          <li>Payment via Razorpay (secure gateway)</li>
+        </ul>
+        <h3 className="font-semibold text-lg">Trial Offer</h3>
+        <ul className="list-disc pl-6 space-y-1 text-muted-foreground">
+          <li>New users receive 300 trial coins (≈5 minutes)</li>
+          <li>Trial coins are non-transferable; one trial per person</li>
+          <li>Creator trial earnings convert to real earnings upon first purchase</li>
+          <li>Unconverted trial earnings expire after 30 days</li>
+        </ul>
+        <h3 className="font-semibold text-lg">Creator Earnings</h3>
+        <ul className="list-disc pl-6 space-y-1 text-muted-foreground">
+          <li>Based on call duration and rating tier (4-8 coins/min)</li>
+          <li>Minimum withdrawal: ₹500</li>
+          <li>Processing time: 3-5 business days</li>
+          <li>TDS deducted as per Indian tax law (if applicable)</li>
+        </ul>
+      </section>
 
-          <section className="space-y-4">
-            <h2 className="font-display text-2xl font-semibold">2. Eligibility</h2>
-            <p className="text-muted-foreground">
-              You must be at least 18 years old to use Bunny Desires. By using our services, 
-              you represent and warrant that you are at least 18 years of age and have the 
-              legal capacity to enter into these Terms.
-            </p>
-          </section>
+      <section className="space-y-4">
+        <h2 className="font-display text-2xl font-semibold">5. Prohibited Conduct</h2>
+        <p className="text-muted-foreground">Users SHALL NOT:</p>
+        <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
+          <li>Share nudity or sexual content</li>
+          <li>Harass, threaten, or abuse others</li>
+          <li>Use the service for prostitution or illegal activities</li>
+          <li>Share personal contact information on the platform</li>
+          <li>Record calls without consent</li>
+          <li>Create multiple accounts</li>
+          <li>Use VPN to bypass geo-restrictions</li>
+          <li>Impersonate others or use bots/automated tools</li>
+        </ul>
+        <p className="text-muted-foreground">
+          Violations result in warning, suspension, or permanent ban.
+        </p>
+      </section>
 
-          <section className="space-y-4">
-            <h2 className="font-display text-2xl font-semibold">3. User Accounts</h2>
-            <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
-              <li>You are responsible for maintaining the confidentiality of your account</li>
-              <li>You must provide accurate and complete information</li>
-              <li>You may not share your account with others</li>
-              <li>You must notify us immediately of any unauthorized access</li>
-            </ul>
-          </section>
+      <section className="space-y-4">
+        <h2 className="font-display text-2xl font-semibold">6. Content Moderation</h2>
+        <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
+          <li>AI-powered content monitoring</li>
+          <li>Manual review of reported content</li>
+          <li>Zero tolerance for illegal content</li>
+          <li>Report button available on all chats</li>
+        </ul>
+      </section>
 
-          <section className="space-y-4">
-            <h2 className="font-display text-2xl font-semibold">4. Prohibited Conduct</h2>
-            <p className="text-muted-foreground">
-              You agree NOT to:
-            </p>
-            <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
-              <li>Share explicit, adult, or inappropriate content</li>
-              <li>Harass, abuse, or harm other users</li>
-              <li>Impersonate others or provide false information</li>
-              <li>Use the service for illegal purposes</li>
-              <li>Attempt to hack, disrupt, or exploit the platform</li>
-              <li>Engage in fraudulent transactions</li>
-              <li>Solicit personal information from other users</li>
-            </ul>
-          </section>
+      <section className="space-y-4">
+        <h2 className="font-display text-2xl font-semibold">7. Intellectual Property</h2>
+        <p className="text-muted-foreground">
+          You retain rights to your content but grant us a license to display it on the platform.
+          Bunny Desires trademarks are our property. Do not use our IP without written permission.
+        </p>
+      </section>
 
-          <section className="space-y-4">
-            <h2 className="font-display text-2xl font-semibold">5. Coin Purchases & Payments</h2>
-            <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
-              <li>All coin purchases are final and non-refundable</li>
-              <li>Coins have no cash value outside the platform</li>
-              <li>Unused coins may expire after 12 months of account inactivity</li>
-              <li>We reserve the right to modify coin prices with notice</li>
-              <li>Payments are processed securely through Razorpay</li>
-            </ul>
-          </section>
+      <section className="space-y-4">
+        <h2 className="font-display text-2xl font-semibold">8. Disclaimer of Warranties</h2>
+        <p className="text-muted-foreground">
+          Service provided "AS IS." No guarantee of uninterrupted service, matches, or connections.
+          We are not responsible for user conduct or third-party payment processor issues.
+        </p>
+      </section>
 
-          <section className="space-y-4">
-            <h2 className="font-display text-2xl font-semibold">6. Creator Earnings & Withdrawals</h2>
-            <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
-              <li>Creators earn coins from video chat time and gifts received</li>
-              <li>Minimum withdrawal amount is ₹500</li>
-              <li>Withdrawals are processed within 3-5 business days</li>
-              <li>Creators are responsible for reporting their income for tax purposes</li>
-              <li>We may withhold earnings if fraud is suspected</li>
-            </ul>
-          </section>
+      <section className="space-y-4">
+        <h2 className="font-display text-2xl font-semibold">9. Limitation of Liability</h2>
+        <p className="text-muted-foreground">
+          Our liability is limited to the amount you paid in the last 12 months. We are not liable
+          for indirect, incidental, special, or consequential damages, lost profits, user misconduct,
+          or third-party actions.
+        </p>
+      </section>
 
-          <section className="space-y-4">
-            <h2 className="font-display text-2xl font-semibold">7. Account Termination</h2>
-            <p className="text-muted-foreground">
-              We reserve the right to suspend or terminate your account at any time for:
-            </p>
-            <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
-              <li>Violation of these Terms</li>
-              <li>Fraudulent or illegal activity</li>
-              <li>Harmful behavior toward other users</li>
-              <li>Inactivity for extended periods</li>
-            </ul>
-          </section>
+      <section className="space-y-4">
+        <h2 className="font-display text-2xl font-semibold">10. Dispute Resolution</h2>
+        <p className="text-muted-foreground">
+          Governed by the laws of India. Exclusive jurisdiction of Mumbai, Maharashtra courts.
+          Disputes resolved through arbitration under the Arbitration and Conciliation Act, 1996.
+          Seat: Mumbai. Language: English. Single arbitrator.
+        </p>
+      </section>
 
-          <section className="space-y-4">
-            <h2 className="font-display text-2xl font-semibold">8. Limitation of Liability</h2>
-            <p className="text-muted-foreground">
-              Bunny Desires is provided "as is" without warranties of any kind. We are not 
-              liable for any indirect, incidental, special, or consequential damages arising 
-              from your use of the service.
-            </p>
-          </section>
+      <section className="space-y-4">
+        <h2 className="font-display text-2xl font-semibold">11. Account Termination</h2>
+        <p className="text-muted-foreground">
+          We may terminate accounts for terms violations, illegal activity, fraudulent behavior,
+          or extended inactivity (3+ years). You may delete your account at any time.
+        </p>
+      </section>
 
-          <section className="space-y-4">
-            <h2 className="font-display text-2xl font-semibold">9. Dispute Resolution</h2>
-            <p className="text-muted-foreground">
-              Any disputes arising from these Terms shall be governed by the laws of India 
-              and subject to the exclusive jurisdiction of the courts in Mumbai, Maharashtra.
-            </p>
-          </section>
+      <section className="space-y-4">
+        <h2 className="font-display text-2xl font-semibold">12. Changes to Terms</h2>
+        <p className="text-muted-foreground">
+          We reserve the right to modify these terms with 30 days advance notice via email.
+          Continued use constitutes acceptance of updated terms.
+        </p>
+      </section>
 
-          <section className="space-y-4">
-            <h2 className="font-display text-2xl font-semibold">10. Contact</h2>
-            <p className="text-muted-foreground">
-              For questions about these Terms, contact us at:
-            </p>
-            <p className="text-muted-foreground">
-              Email: legal@bunnydesires.com<br />
-              Address: Mumbai, India
-            </p>
-          </section>
-        </div>
-      </main>
-    </div>
+      <section className="space-y-4">
+        <h2 className="font-display text-2xl font-semibold">13. Contact</h2>
+        <p className="text-muted-foreground">
+          Email:{" "}
+          <a href="mailto:legal@bunnydesires.com" className="text-primary hover:underline">
+            legal@bunnydesires.com
+          </a>
+          <br />
+          Address: Mumbai, India
+        </p>
+      </section>
+    </PageLayout>
   );
 };
 

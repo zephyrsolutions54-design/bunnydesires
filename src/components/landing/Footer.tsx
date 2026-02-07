@@ -6,16 +6,15 @@ const Footer = () => {
 
   const footerLinks = {
     Product: [
-      { name: "How It Works", href: "#how-it-works" },
-      { name: "Features", href: "#features" },
-      { name: "Pricing", href: "#pricing" },
-      { name: "Safety", href: "#safety" },
+      { name: "How It Works", href: "/how-it-works" },
+      { name: "Features", href: "/features" },
+      { name: "Pricing", href: "/pricing" },
+      { name: "Safety", href: "/safety" },
     ],
     Company: [
       { name: "About Us", href: "/about" },
       { name: "Careers", href: "/careers" },
-      { name: "Blog", href: "/blog" },
-      { name: "Press", href: "/press" },
+      { name: "Contact Us", href: "/contact" },
     ],
     Legal: [
       { name: "Privacy Policy", href: "/privacy" },
@@ -25,7 +24,6 @@ const Footer = () => {
     ],
     Support: [
       { name: "Help Center", href: "/help" },
-      { name: "Contact Us", href: "/contact" },
       { name: "Safety Tips", href: "/safety-tips" },
       { name: "Community Guidelines", href: "/guidelines" },
     ],
@@ -34,9 +32,7 @@ const Footer = () => {
   return (
     <footer className="bg-card border-t border-border">
       <div className="container mx-auto px-4 py-16">
-        {/* Main Footer */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
-          {/* Brand */}
           <div className="col-span-2 md:col-span-1">
             <Link to="/" className="flex items-center gap-2 mb-4">
               <Heart className="w-8 h-8 text-primary fill-primary" />
@@ -45,33 +41,23 @@ const Footer = () => {
               </span>
             </Link>
             <p className="text-sm text-muted-foreground mb-4">
-              Connect with amazing people worldwide through HD video chat with 
+              Connect with amazing people worldwide through HD video chat with
               real-time translation.
             </p>
           </div>
 
-          {/* Links */}
           {Object.entries(footerLinks).map(([category, links]) => (
             <div key={category}>
               <h3 className="font-semibold mb-4">{category}</h3>
               <ul className="space-y-2">
                 {links.map((link) => (
                   <li key={link.name}>
-                    {link.href.startsWith("#") ? (
-                      <a
-                        href={link.href}
-                        className="text-sm text-muted-foreground hover:text-primary transition-colors"
-                      >
-                        {link.name}
-                      </a>
-                    ) : (
-                      <Link
-                        to={link.href}
-                        className="text-sm text-muted-foreground hover:text-primary transition-colors"
-                      >
-                        {link.name}
-                      </Link>
-                    )}
+                    <Link
+                      to={link.href}
+                      className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      {link.name}
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -79,7 +65,6 @@ const Footer = () => {
           ))}
         </div>
 
-        {/* Bottom Bar */}
         <div className="pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground">
             © {currentYear} Bunny Desires. All rights reserved.
