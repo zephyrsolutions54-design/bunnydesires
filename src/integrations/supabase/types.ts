@@ -118,6 +118,8 @@ export type Database = {
           gift_earnings: number
           id: string
           total_earnings: number
+          trial_earnings: number | null
+          trial_earnings_converted: number | null
           updated_at: string
           user_id: string
           withdrawn_amount: number
@@ -129,6 +131,8 @@ export type Database = {
           gift_earnings?: number
           id?: string
           total_earnings?: number
+          trial_earnings?: number | null
+          trial_earnings_converted?: number | null
           updated_at?: string
           user_id: string
           withdrawn_amount?: number
@@ -140,6 +144,8 @@ export type Database = {
           gift_earnings?: number
           id?: string
           total_earnings?: number
+          trial_earnings?: number | null
+          trial_earnings_converted?: number | null
           updated_at?: string
           user_id?: string
           withdrawn_amount?: number
@@ -238,12 +244,14 @@ export type Database = {
       }
       profiles: {
         Row: {
+          account_type: string | null
           avatar_url: string | null
           bio: string | null
           country: string | null
           created_at: string
           current_earnings_rate: number | null
           email: string
+          first_purchase_date: string | null
           gender: Database["public"]["Enums"]["user_gender"]
           id: string
           is_online: boolean | null
@@ -254,15 +262,18 @@ export type Database = {
           rating_breakdown: Json | null
           rating_tier: Database["public"]["Enums"]["rating_tier"] | null
           total_ratings: number | null
+          trial_call_ids: string[] | null
           updated_at: string
         }
         Insert: {
+          account_type?: string | null
           avatar_url?: string | null
           bio?: string | null
           country?: string | null
           created_at?: string
           current_earnings_rate?: number | null
           email: string
+          first_purchase_date?: string | null
           gender: Database["public"]["Enums"]["user_gender"]
           id: string
           is_online?: boolean | null
@@ -273,15 +284,18 @@ export type Database = {
           rating_breakdown?: Json | null
           rating_tier?: Database["public"]["Enums"]["rating_tier"] | null
           total_ratings?: number | null
+          trial_call_ids?: string[] | null
           updated_at?: string
         }
         Update: {
+          account_type?: string | null
           avatar_url?: string | null
           bio?: string | null
           country?: string | null
           created_at?: string
           current_earnings_rate?: number | null
           email?: string
+          first_purchase_date?: string | null
           gender?: Database["public"]["Enums"]["user_gender"]
           id?: string
           is_online?: boolean | null
@@ -292,6 +306,7 @@ export type Database = {
           rating_breakdown?: Json | null
           rating_tier?: Database["public"]["Enums"]["rating_tier"] | null
           total_ratings?: number | null
+          trial_call_ids?: string[] | null
           updated_at?: string
         }
         Relationships: []
@@ -391,13 +406,74 @@ export type Database = {
           },
         ]
       }
+      trial_earnings_log: {
+        Row: {
+          call_id: string | null
+          coins_earned: number
+          converted_at: string | null
+          created_at: string | null
+          creator_id: string
+          expires_at: string | null
+          id: string
+          is_converted: boolean | null
+          trial_user_id: string
+        }
+        Insert: {
+          call_id?: string | null
+          coins_earned?: number
+          converted_at?: string | null
+          created_at?: string | null
+          creator_id: string
+          expires_at?: string | null
+          id?: string
+          is_converted?: boolean | null
+          trial_user_id: string
+        }
+        Update: {
+          call_id?: string | null
+          coins_earned?: number
+          converted_at?: string | null
+          created_at?: string | null
+          creator_id?: string
+          expires_at?: string | null
+          id?: string
+          is_converted?: boolean | null
+          trial_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trial_earnings_log_call_id_fkey"
+            columns: ["call_id"]
+            isOneToOne: false
+            referencedRelation: "calls"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trial_earnings_log_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trial_earnings_log_trial_user_id_fkey"
+            columns: ["trial_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wallets: {
         Row: {
           balance: number
           created_at: string
           id: string
+          is_trial_used: boolean | null
           total_purchased: number
           total_spent: number
+          trial_coins: number | null
+          trial_expires_at: string | null
           updated_at: string
           user_id: string
         }
@@ -405,8 +481,11 @@ export type Database = {
           balance?: number
           created_at?: string
           id?: string
+          is_trial_used?: boolean | null
           total_purchased?: number
           total_spent?: number
+          trial_coins?: number | null
+          trial_expires_at?: string | null
           updated_at?: string
           user_id: string
         }
@@ -414,8 +493,11 @@ export type Database = {
           balance?: number
           created_at?: string
           id?: string
+          is_trial_used?: boolean | null
           total_purchased?: number
           total_spent?: number
+          trial_coins?: number | null
+          trial_expires_at?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -488,6 +570,11 @@ export type Database = {
           tier: Database["public"]["Enums"]["rating_tier"]
         }[]
       }
+      convert_trial_earnings: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
+      expire_trial_earnings: { Args: never; Returns: undefined }
       get_user_gender: {
         Args: { user_id: string }
         Returns: Database["public"]["Enums"]["user_gender"]
