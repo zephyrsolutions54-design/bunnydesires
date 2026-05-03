@@ -8,7 +8,6 @@ import {
   Search,
   Filter,
   MapPin,
-  Star,
   Video,
   Gift,
   Wallet,
@@ -19,12 +18,20 @@ import {
   LogOut,
   Loader2,
   Coins,
+  History,
+  MessageCircle,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCreators } from "@/hooks/useCreators";
 import { TierBadge } from "@/components/rating/TierBadge";
 import { StarRating } from "@/components/rating/StarRating";
+import { BuyCoinsModal } from "@/components/modals/BuyCoinsModal";
+import { SendGiftModal } from "@/components/modals/SendGiftModal";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { SEOHead } from "@/components/SEOHead";
+import { CreatorGridSkeleton } from "@/components/skeletons/CreatorCardSkeleton";
 
 const countries = ["All Countries", "India", "Brazil", "Japan", "Spain", "Ukraine", "Germany", "USA", "UK"];
 
@@ -49,6 +56,9 @@ const BrowsePage = () => {
   const [selectedCountry, setSelectedCountry] = useState("All Countries");
   const [showOnlineOnly, setShowOnlineOnly] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isBuyCoinsOpen, setIsBuyCoinsOpen] = useState(false);
+  const [giftTarget, setGiftTarget] = useState<{ id: string; name: string } | null>(null);
+  const [callingCreatorId, setCallingCreatorId] = useState<string | null>(null);
 
   const { creators, loading } = useCreators({
     country: selectedCountry,
@@ -61,10 +71,112 @@ const BrowsePage = () => {
     navigate("/");
   };
 
+  const handleVideoChat = async (creatorId: string) => {
+    setCallingCreatorId(creatorId);
+
+    try {
+      const creator = creators.find((c) => c.id === creatorId);
+
+      if (creator && !creator.is_online) {
+        toast.error("Creator is currently offline");
+        return;
+      }
+
+      const currentBalance = wallet?.balance || 0;
+      const coinsPerMinute = creator?.current_earnings_rate || 6;
+      if (currentBalance < coinsPerMinute) {
+        toast.error(`Not enough coins. You need at least ${coinsPerMinute} coins.`);
+        return;
+      }
+
+      // Clean up stale calls for both parties before initiating
+      if (user) {
+        await supabase
+          .from("calls")
+          .update({ status: "ended", end_time: new Date().toISOString() })
+          .in("status", ["pending", "active"])
+          .or(`initiator_id.eq.${user.id},receiver_id.eq.${user.id},initiator_id.eq.${creatorId},receiver_id.eq.${creatorId}`);
+      }
+
+      let callData: {
+        callId: string;
+        token: string;
+        roomName: string;
+        coinsPerMinute: number;
+        receiver: { id: string; name: string; avatar_url: string | null; language?: string };
+      } | null = null;
+
+      // Try edge function first
+      try {
+        const { data, error } = await supabase.functions.invoke("initiate-call", {
+          body: { receiverId: creatorId },
+        });
+
+        if (!error && data && !data.error) {
+          callData = data;
+        } else {
+          let errMsg = data?.error || "Call failed";
+          if (error && typeof error === "object" && "context" in error) {
+            try {
+              const resp = (error as { context: Response }).context;
+              const body = await resp.json();
+              errMsg = body?.error || errMsg;
+            } catch { /* ignore parse error */ }
+          }
+          console.warn("initiate-call edge fn error:", errMsg);
+          toast.error(errMsg);
+          return;
+        }
+      } catch {
+        // Edge function not reachable — create call record directly (no LiveKit token in dev)
+        const { data: call, error: callErr } = await supabase
+          .from("calls")
+          .insert({
+            initiator_id: user?.id,
+            receiver_id: creatorId,
+            status: "pending",
+            coins_per_minute: coinsPerMinute,
+          })
+          .select("id")
+          .single();
+
+        if (callErr || !call) {
+          toast.error("Failed to create call record");
+          return;
+        }
+
+        callData = {
+          callId: call.id,
+          token: "",
+          roomName: `call_${call.id}`,
+          coinsPerMinute,
+          receiver: {
+            id: creatorId,
+            name: creator?.name || "Creator",
+            avatar_url: creator?.avatar_url || null,
+            language: creator?.language || "en",
+          },
+        };
+      }
+
+      if (callData) {
+        navigate(`/call/${callData.callId}`, {
+          state: { callInfo: callData },
+        });
+      }
+    } catch (err) {
+      console.error("Initiate call error:", err);
+      toast.error("Failed to start call. Please try again.");
+    } finally {
+      setCallingCreatorId(null);
+    }
+  };
+
   const onlineCount = creators.filter((c) => c.is_online).length;
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead title="Browse Creators" description="Discover and connect with amazing creators worldwide through video chat." path="/browse" />
       {/* Header */}
       <header className="sticky top-0 z-50 glass border-b border-border/50">
         <div className="container mx-auto px-4">
@@ -105,10 +217,32 @@ const BrowsePage = () => {
 
               {/* Buy Coins - only show for male users */}
               {profile?.gender === "male" && (
-                <Button variant="hero" size="sm" className="hidden sm:flex">
+                <Button
+                  variant="hero"
+                  size="sm"
+                  className="hidden sm:flex"
+                  onClick={() => setIsBuyCoinsOpen(true)}
+                >
                   <Sparkles className="w-4 h-4 mr-1" />
                   Buy Coins
                 </Button>
+              )}
+
+              {/* Transaction History - only show for male users */}
+              {profile?.gender === "male" && (
+                <Link to="/transactions">
+                  <Button variant="ghost" size="icon" title="Transaction History">
+                    <History className="w-5 h-5" />
+                  </Button>
+                </Link>
+              )}
+
+              {profile?.gender === "male" && (
+                <Link to="/messages">
+                  <Button variant="ghost" size="icon" title="Messages">
+                    <MessageCircle className="w-5 h-5" />
+                  </Button>
+                </Link>
               )}
 
               {/* Mobile Filter Toggle */}
@@ -251,11 +385,7 @@ const BrowsePage = () => {
             </div>
 
             {/* Loading State */}
-            {loading && (
-              <div className="flex items-center justify-center py-20">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
-              </div>
-            )}
+            {loading && <CreatorGridSkeleton />}
 
             {/* Empty State */}
             {!loading && creators.length === 0 && (
@@ -346,12 +476,28 @@ const BrowsePage = () => {
                           <Button 
                             variant="hero" 
                             className="flex-1"
-                            disabled={!creator.is_online}
+                            disabled={!creator.is_online || callingCreatorId === creator.id}
+                            onClick={() => handleVideoChat(creator.id)}
                           >
-                            <Video className="w-4 h-4 mr-1" />
-                            Video Chat
+                            {callingCreatorId === creator.id ? (
+                              <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                            ) : (
+                              <Video className="w-4 h-4 mr-1" />
+                            )}
+                            {callingCreatorId === creator.id ? "Calling..." : "Video Chat"}
                           </Button>
-                          <Button variant="outline" size="icon">
+                          {profile?.gender === "male" && (
+                            <Button variant="outline" size="icon" asChild title="Message">
+                              <Link to={`/messages/${creator.id}`}>
+                                <MessageCircle className="w-4 h-4" />
+                              </Link>
+                            </Button>
+                          )}
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => setGiftTarget({ id: creator.id, name: creator.name })}
+                          >
                             <Gift className="w-4 h-4" />
                           </Button>
                         </div>
@@ -364,6 +510,20 @@ const BrowsePage = () => {
           </main>
         </div>
       </div>
+
+      {/* Modals */}
+      <BuyCoinsModal
+        isOpen={isBuyCoinsOpen}
+        onClose={() => setIsBuyCoinsOpen(false)}
+      />
+      {giftTarget && (
+        <SendGiftModal
+          isOpen={!!giftTarget}
+          onClose={() => setGiftTarget(null)}
+          receiverId={giftTarget.id}
+          receiverName={giftTarget.name}
+        />
+      )}
     </div>
   );
 };

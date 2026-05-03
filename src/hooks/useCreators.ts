@@ -75,5 +75,45 @@ export function useCreators(options: UseCreatorsOptions = {}) {
     fetchCreators();
   }, [country, onlineOnly, searchQuery]);
 
+  // Real-time online status updates
+  useEffect(() => {
+    const channel = supabase
+      .channel("creators-online-status")
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "profiles",
+          filter: "gender=eq.female",
+        },
+        (payload) => {
+          const updated = payload.new as Partial<Creator> & { id: string };
+          setCreators((prev) =>
+            prev.map((c) =>
+              c.id === updated.id
+                ? {
+                    ...c,
+                    is_online: updated.is_online ?? c.is_online,
+                    rating: updated.rating ?? c.rating,
+                    total_ratings: updated.total_ratings ?? c.total_ratings,
+                    rating_tier: (updated.rating_tier as RatingTier) ?? c.rating_tier,
+                    current_earnings_rate: updated.current_earnings_rate ?? c.current_earnings_rate,
+                    bio: updated.bio !== undefined ? updated.bio : c.bio,
+                    avatar_url: updated.avatar_url !== undefined ? updated.avatar_url : c.avatar_url,
+                    name: updated.name ?? c.name,
+                  }
+                : c
+            )
+          );
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   return { creators, loading, error };
 }

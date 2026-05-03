@@ -1,6 +1,7 @@
 import { Heart, ArrowLeft } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import Footer from "./Footer";
+import { SEOHead } from "@/components/SEOHead";
 
 interface PageLayoutProps {
   title: string;
@@ -9,8 +10,11 @@ interface PageLayoutProps {
 }
 
 const PageLayout = ({ title, children, lastUpdated }: PageLayoutProps) => {
+  const location = useLocation();
+
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead title={title} path={location.pathname} />
       <header className="sticky top-0 z-50 glass border-b border-border/50">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16">

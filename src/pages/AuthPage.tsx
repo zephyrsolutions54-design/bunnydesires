@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { Link, useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
+import { SEOHead } from "@/components/SEOHead";
 import { useAuth } from "@/contexts/AuthContext";
 import { z } from "zod";
 
@@ -32,7 +33,7 @@ const AuthPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, signUp, signIn, loading: authLoading } = useAuth();
+  const { user, profile, signUp, signIn, loading: authLoading } = useAuth();
   
   const [mode, setMode] = useState<AuthMode>(
     searchParams.get("mode") === "signup" ? "signup" : "signin"
@@ -50,18 +51,30 @@ const AuthPage = () => {
     confirmPassword: "",
   });
 
+  const getDefaultRoute = () => {
+    const from = (location.state as { from?: { pathname: string } })?.from?.pathname;
+    if (from) return from;
+    return profile?.gender === "female" ? "/dashboard" : "/browse";
+  };
+
   // Redirect if already logged in
   useEffect(() => {
     if (user && !authLoading) {
-      const from = (location.state as { from?: { pathname: string } })?.from?.pathname || "/browse";
-      navigate(from, { replace: true });
+      navigate(getDefaultRoute(), { replace: true });
     }
-  }, [user, authLoading, navigate, location]);
+  }, [user, profile, authLoading, navigate, location]);
 
   useEffect(() => {
     const newMode = searchParams.get("mode") === "signup" ? "signup" : "signin";
     setMode(newMode);
   }, [searchParams]);
+
+  // Reset gender when entering signup so a stale selection cannot submit wrong metadata
+  useEffect(() => {
+    if (mode === "signup") {
+      setGender(null);
+    }
+  }, [mode]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -152,8 +165,6 @@ const AuthPage = () => {
         }
         
         toast.success("Welcome back!");
-        const from = (location.state as { from?: { pathname: string } })?.from?.pathname || "/browse";
-        navigate(from, { replace: true });
       }
     } catch (err) {
       toast.error("An unexpected error occurred. Please try again.");
@@ -179,6 +190,7 @@ const AuthPage = () => {
 
   return (
     <div className="min-h-screen gradient-hero flex items-center justify-center p-4">
+      <SEOHead title="Sign In" description="Sign in or create an account to start connecting." path="/auth" />
       {/* Background decorations */}
       <motion.div
         className="absolute top-20 left-10 w-32 h-32 rounded-full bg-primary/10 blur-3xl"

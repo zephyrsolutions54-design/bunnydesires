@@ -133,6 +133,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // Real-time subscriptions for wallet and earnings
+  useEffect(() => {
+    if (!user) return;
+
+    const walletChannel = supabase
+      .channel(`wallet-rt-${user.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "wallets",
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          setWallet(payload.new as Wallet);
+        }
+      )
+      .subscribe();
+
+    const earningsChannel = supabase
+      .channel(`earnings-rt-${user.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "earnings",
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          setEarnings(payload.new as Earnings);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(walletChannel);
+      supabase.removeChannel(earningsChannel);
+    };
+  }, [user]);
+
   useEffect(() => {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(

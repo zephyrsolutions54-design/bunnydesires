@@ -3,9 +3,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Heart } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { user, profile } = useAuth();
 
   const navLinks = [
     { name: "How It Works", href: "#how-it-works" },
@@ -13,6 +15,9 @@ const Navbar = () => {
     { name: "Safety", href: "#safety" },
     { name: "Pricing", href: "#pricing" },
   ];
+
+  const appLink = profile?.gender === "female" ? "/dashboard" : "/browse";
+  const appLabel = profile?.gender === "female" ? "Dashboard" : "Browse";
 
   return (
     <motion.nav
@@ -54,16 +59,26 @@ const Navbar = () => {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center gap-3">
-            <Link to="/auth">
-              <Button variant="ghost" size="lg">
-                Sign In
-              </Button>
-            </Link>
-            <Link to="/auth?mode=signup">
-              <Button variant="hero" size="lg">
-                Get Started
-              </Button>
-            </Link>
+            {user ? (
+              <Link to={appLink}>
+                <Button variant="hero" size="lg">
+                  {appLabel}
+                </Button>
+              </Link>
+            ) : (
+              <>
+                <Link to="/auth">
+                  <Button variant="ghost" size="lg">
+                    Sign In
+                  </Button>
+                </Link>
+                <Link to="/auth?mode=signup">
+                  <Button variant="hero" size="lg">
+                    Get Started
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -101,16 +116,26 @@ const Navbar = () => {
                   </a>
                 ))}
                 <div className="flex flex-col gap-2 pt-4 border-t border-border">
-                  <Link to="/auth" onClick={() => setIsOpen(false)}>
-                    <Button variant="outline" className="w-full">
-                      Sign In
-                    </Button>
-                  </Link>
-                  <Link to="/auth?mode=signup" onClick={() => setIsOpen(false)}>
-                    <Button variant="hero" className="w-full">
-                      Get Started
-                    </Button>
-                  </Link>
+                  {user ? (
+                    <Link to={appLink} onClick={() => setIsOpen(false)}>
+                      <Button variant="hero" className="w-full">
+                        {appLabel}
+                      </Button>
+                    </Link>
+                  ) : (
+                    <>
+                      <Link to="/auth" onClick={() => setIsOpen(false)}>
+                        <Button variant="outline" className="w-full">
+                          Sign In
+                        </Button>
+                      </Link>
+                      <Link to="/auth?mode=signup" onClick={() => setIsOpen(false)}>
+                        <Button variant="hero" className="w-full">
+                          Get Started
+                        </Button>
+                      </Link>
+                    </>
+                  )}
                 </div>
               </div>
             </motion.div>

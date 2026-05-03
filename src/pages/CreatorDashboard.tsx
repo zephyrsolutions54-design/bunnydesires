@@ -17,6 +17,12 @@ import {
   ArrowUpRight,
   Loader2,
   Coins,
+  PhoneIncoming,
+  CheckCircle2,
+  XCircle,
+  Clock3,
+  Ban,
+  MessageCircle,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -24,12 +30,46 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { RatingDashboard } from "@/components/rating/RatingDashboard";
 import { TierBadge } from "@/components/rating/TierBadge";
+import { WithdrawalModal } from "@/components/modals/WithdrawalModal";
+import { IncomingCallNotification } from "@/components/IncomingCallNotification";
+import { useRecentActivity, type ActivityItem } from "@/hooks/useRecentActivity";
+import { SEOHead } from "@/components/SEOHead";
+import { ActivityListSkeleton } from "@/components/skeletons/DashboardSkeleton";
+
+const formatTimeAgo = (dateStr: string) => {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60_000);
+  if (mins < 1) return "Just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+  return new Date(dateStr).toLocaleDateString();
+};
+
+const formatDuration = (s: number) => {
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  if (m === 0) return `${sec}s`;
+  return `${m}m ${sec}s`;
+};
+
+const withdrawalStatusIcon: Record<string, { icon: typeof CheckCircle2; color: string }> = {
+  completed: { icon: CheckCircle2, color: "text-green-500" },
+  pending: { icon: Clock3, color: "text-yellow-500" },
+  processing: { icon: Loader2, color: "text-blue-500" },
+  rejected: { icon: Ban, color: "text-red-500" },
+};
 
 const CreatorDashboard = () => {
   const navigate = useNavigate();
   const { profile, earnings, signOut, refreshProfile } = useAuth();
   const [isOnline, setIsOnline] = useState(profile?.is_online || false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isWithdrawalOpen, setIsWithdrawalOpen] = useState(false);
+  const [activityTab, setActivityTab] = useState<"activity" | "withdrawals">("activity");
+  const { activity, withdrawals, loading: activityLoading } = useRecentActivity();
 
   const handleToggleOnline = async () => {
     if (!profile) return;
@@ -101,6 +141,7 @@ const CreatorDashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead title="Creator Dashboard" description="Manage your earnings, view activity, and go online to receive video calls." path="/dashboard" />
       {/* Header */}
       <header className="sticky top-0 z-50 glass border-b border-border/50">
         <div className="container mx-auto px-4">
@@ -138,19 +179,27 @@ const CreatorDashboard = () => {
                 </button>
               </div>
 
+              <Link to="/messages">
+                <Button variant="ghost" size="icon" title="Messages">
+                  <MessageCircle className="w-5 h-5" />
+                </Button>
+              </Link>
+
               <Button variant="ghost" size="icon" onClick={handleSignOut}>
                 <LogOut className="w-5 h-5" />
               </Button>
 
-              <div className="w-9 h-9 rounded-full gradient-primary flex items-center justify-center overflow-hidden">
-                {profile?.avatar_url ? (
-                  <img src={profile.avatar_url} alt={profile.name} className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-sm font-semibold text-primary-foreground">
-                    {profile?.name?.charAt(0)?.toUpperCase() || "C"}
-                  </span>
-                )}
-              </div>
+              <Link to="/profile">
+                <div className="w-9 h-9 rounded-full gradient-primary flex items-center justify-center overflow-hidden">
+                  {profile?.avatar_url ? (
+                    <img src={profile.avatar_url} alt={profile.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-sm font-semibold text-primary-foreground">
+                      {profile?.name?.charAt(0)?.toUpperCase() || "C"}
+                    </span>
+                  )}
+                </div>
+              </Link>
             </div>
           </div>
         </div>
@@ -219,11 +268,15 @@ const CreatorDashboard = () => {
                 <div className="p-4 rounded-xl bg-muted/50">
                   <p className="text-sm text-muted-foreground mb-1">Available to withdraw</p>
                   <p className="text-2xl font-bold text-green-500">₹{availableBalanceINR}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    You earn 80% of all coins from calls & gifts
+                  </p>
                 </div>
                 <Button 
                   variant="hero" 
                   className="w-full"
                   disabled={!earnings || earnings.available_balance < 3000}
+                  onClick={() => setIsWithdrawalOpen(true)}
                 >
                   Request Withdrawal
                   <ArrowUpRight className="w-4 h-4 ml-2" />
@@ -263,10 +316,12 @@ const CreatorDashboard = () => {
                     <p className="text-sm text-muted-foreground">{profile?.email}</p>
                   </div>
                 </div>
-                <Button variant="outline" className="w-full">
-                  <Settings className="w-4 h-4 mr-2" />
-                  Edit Profile
-                </Button>
+                <Link to="/profile">
+                  <Button variant="outline" className="w-full">
+                    <Settings className="w-4 h-4 mr-2" />
+                    Edit Profile
+                  </Button>
+                </Link>
               </div>
             </CardContent>
           </Card>
@@ -279,27 +334,191 @@ const CreatorDashboard = () => {
           </div>
         )}
 
-        {/* Recent Activity Placeholder */}
+        {/* Recent Activity & Withdrawals */}
         <Card className="bg-card border-border/50">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Clock className="w-5 h-5 text-muted-foreground" />
-              Recent Activity
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="w-5 h-5 text-muted-foreground" />
+                {activityTab === "activity" ? "Recent Activity" : "Withdrawal History"}
+              </CardTitle>
+              <div className="flex gap-1 bg-muted rounded-lg p-1">
+                <button
+                  onClick={() => setActivityTab("activity")}
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                    activityTab === "activity"
+                      ? "bg-background shadow-sm text-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Activity
+                </button>
+                <button
+                  onClick={() => setActivityTab("withdrawals")}
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                    activityTab === "withdrawals"
+                      ? "bg-background shadow-sm text-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Withdrawals
+                </button>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-center py-8">
-              <Video className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
-              <p className="text-muted-foreground">No recent activity</p>
-              <p className="text-sm text-muted-foreground">
-                Go online to start receiving video chat requests!
-              </p>
-            </div>
+            {activityLoading ? (
+              <ActivityListSkeleton />
+            ) : activityTab === "activity" ? (
+              activity.length === 0 ? (
+                <div className="text-center py-8">
+                  <Video className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
+                  <p className="text-muted-foreground">No recent activity</p>
+                  <p className="text-sm text-muted-foreground">
+                    Go online to start receiving video chat requests!
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {activity.map((item) => (
+                    <ActivityRow key={`${item.type}-${item.type === "call" ? item.data.id : item.data.id}`} item={item} />
+                  ))}
+                </div>
+              )
+            ) : withdrawals.length === 0 ? (
+              <div className="text-center py-8">
+                <DollarSign className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
+                <p className="text-muted-foreground">No withdrawal history</p>
+                <p className="text-sm text-muted-foreground">
+                  Request a withdrawal when you have enough earnings.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {withdrawals.map((w) => {
+                  const statusInfo = withdrawalStatusIcon[w.status] || withdrawalStatusIcon.pending;
+                  const StatusIcon = statusInfo.icon;
+                  return (
+                    <div
+                      key={w.id}
+                      className="flex items-center gap-3 p-3 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors"
+                    >
+                      <div className={`p-2 rounded-lg bg-green-500/10`}>
+                        <DollarSign className="w-4 h-4 text-green-500" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium text-sm">
+                            ₹{Number(w.amount_inr).toFixed(2)}
+                          </p>
+                          <span className="text-xs text-muted-foreground">
+                            ({w.amount.toLocaleString()} coins)
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {w.payment_method} &middot; {formatTimeAgo(w.requested_at)}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <StatusIcon className={`w-4 h-4 ${statusInfo.color} ${w.status === "processing" ? "animate-spin" : ""}`} />
+                        <span className={`text-xs font-medium capitalize ${statusInfo.color}`}>
+                          {w.status}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </CardContent>
         </Card>
       </main>
+
+      <WithdrawalModal
+        isOpen={isWithdrawalOpen}
+        onClose={() => setIsWithdrawalOpen(false)}
+      />
+      <IncomingCallNotification />
     </div>
   );
 };
+
+function ActivityRow({ item }: { item: ActivityItem }) {
+  if (item.type === "call") {
+    const c = item.data;
+    const statusColors: Record<string, string> = {
+      ended: "text-green-500 bg-green-500/10",
+      declined: "text-red-500 bg-red-500/10",
+      missed: "text-yellow-500 bg-yellow-500/10",
+      active: "text-blue-500 bg-blue-500/10",
+    };
+    const colorClass = statusColors[c.status] || "text-muted-foreground bg-muted";
+
+    return (
+      <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors">
+        <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center overflow-hidden flex-shrink-0">
+          {c.caller_avatar ? (
+            <img src={c.caller_avatar} alt={c.caller_name} className="w-full h-full object-cover" />
+          ) : (
+            <span className="text-xs font-semibold">
+              {c.caller_name.charAt(0).toUpperCase()}
+            </span>
+          )}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <PhoneIncoming className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
+            <p className="font-medium text-sm truncate">{c.caller_name}</p>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {c.status === "ended" && c.duration_seconds > 0
+              ? `${formatDuration(c.duration_seconds)} · ${c.coins_spent} coins earned`
+              : c.status === "declined"
+              ? "Declined"
+              : c.status === "missed"
+              ? "Missed"
+              : c.status}
+          </p>
+        </div>
+        <div className="text-right flex-shrink-0">
+          <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${colorClass}`}>
+            {c.status}
+          </span>
+          <p className="text-xs text-muted-foreground mt-1">{formatTimeAgo(c.created_at)}</p>
+        </div>
+      </div>
+    );
+  }
+
+  const g = item.data;
+  return (
+    <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors">
+      <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center overflow-hidden flex-shrink-0">
+        {g.sender_avatar ? (
+          <img src={g.sender_avatar} alt={g.sender_name} className="w-full h-full object-cover" />
+        ) : (
+          <span className="text-xs font-semibold">
+            {g.sender_name.charAt(0).toUpperCase()}
+          </span>
+        )}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <Gift className="w-3.5 h-3.5 text-pink-400 flex-shrink-0" />
+          <p className="font-medium text-sm truncate">{g.sender_name}</p>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Sent {g.gift_name} · {g.coins_amount} coins
+        </p>
+      </div>
+      <div className="text-right flex-shrink-0">
+        <span className="text-xs font-medium px-2 py-0.5 rounded-full text-pink-500 bg-pink-500/10">
+          Gift
+        </span>
+        <p className="text-xs text-muted-foreground mt-1">{formatTimeAgo(g.created_at)}</p>
+      </div>
+    </div>
+  );
+}
 
 export default CreatorDashboard;

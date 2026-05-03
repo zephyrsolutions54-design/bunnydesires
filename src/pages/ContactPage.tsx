@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Mail, Phone, Clock, MapPin } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const categories = [
   "General Inquiry",
@@ -20,15 +21,41 @@ const categories = [
 
 const ContactPage = () => {
   const [loading, setLoading] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState("");
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+
+    const form = e.target as HTMLFormElement;
+    const formData = new FormData(form);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("contact-form", {
+        body: {
+          name: formData.get("name") as string,
+          email: formData.get("email") as string,
+          category: selectedCategory,
+          message: formData.get("message") as string,
+        },
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
       toast({ title: "Message sent!", description: "We'll get back to you within 24 hours." });
-      (e.target as HTMLFormElement).reset();
-    }, 1000);
+      form.reset();
+      setSelectedCategory("");
+    } catch (err) {
+      console.error("Contact form error:", err);
+      toast({
+        title: "Failed to send",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -56,16 +83,16 @@ const ContactPage = () => {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="name">Name</Label>
-              <Input id="name" required placeholder="Your name" className="bg-background border-border" />
+              <Input id="name" name="name" required placeholder="Your name" className="bg-background border-border" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" required placeholder="you@example.com" className="bg-background border-border" />
+              <Input id="email" name="email" type="email" required placeholder="you@example.com" className="bg-background border-border" />
             </div>
           </div>
           <div className="space-y-2">
             <Label>Category</Label>
-            <Select required>
+            <Select required value={selectedCategory} onValueChange={setSelectedCategory}>
               <SelectTrigger className="bg-background border-border">
                 <SelectValue placeholder="Select a category" />
               </SelectTrigger>
@@ -78,7 +105,7 @@ const ContactPage = () => {
           </div>
           <div className="space-y-2">
             <Label htmlFor="message">Message</Label>
-            <Textarea id="message" required placeholder="How can we help?" rows={5} className="bg-background border-border" />
+            <Textarea id="message" name="message" required placeholder="How can we help?" rows={5} className="bg-background border-border" />
           </div>
           <Button type="submit" disabled={loading} className="w-full sm:w-auto">
             {loading ? "Sending..." : "Submit"}
