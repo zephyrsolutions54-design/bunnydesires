@@ -163,7 +163,9 @@ const ProfilePage = () => {
     if (!profile) return;
     setIsDeleting(true);
     try {
-      const { data, error } = await supabase.functions.invoke("delete-account", { body: {} });
+      const { data, error } = await supabase.functions.invoke("delete-account", {
+        body: {},
+      });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
 
@@ -173,7 +175,24 @@ const ProfilePage = () => {
       navigate("/", { replace: true });
     } catch (err) {
       console.error("Delete account error:", err);
-      toast.error(err instanceof Error ? err.message : "Could not delete account. Try again or contact support.");
+      const raw =
+        err instanceof Error ? err.message : typeof err === "object" && err && "message" in err ? String((err as { message: unknown }).message) : "";
+      const unreachable =
+        raw.includes("Failed to send a request") ||
+        raw.includes("FunctionsFetchError") ||
+        (typeof err === "object" && err !== null && "name" in err && (err as { name: string }).name === "FunctionsFetchError");
+
+      if (unreachable) {
+        if (import.meta.env.DEV) {
+          toast.error(
+            "delete-account Edge Function is not reachable. Deploy it: supabase functions deploy delete-account (requires Owner/Admin on the Supabase org.)"
+          );
+        } else {
+          toast.error("Account deletion is temporarily unavailable. Please try again later or contact support.");
+        }
+      } else {
+        toast.error(raw || "Could not delete account. Try again or contact support.");
+      }
     } finally {
       setIsDeleting(false);
     }
