@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { DEFAULT_COINS_PER_MINUTE } from "@/constants/economy";
 
 interface Rating {
   id: string;
@@ -79,7 +80,7 @@ export function useRatings(userId?: string) {
             averageRating: Number(profile.rating) || 0,
             totalRatings: profile.total_ratings || 0,
             ratingBreakdown: breakdown,
-            currentEarningsRate: profile.current_earnings_rate || 6,
+            currentEarningsRate: profile.current_earnings_rate || DEFAULT_COINS_PER_MINUTE,
             ratingTier: profile.rating_tier || "standard",
           });
         }
@@ -141,7 +142,7 @@ export function getTierInfo(tier: string) {
       color: "text-amber-400",
       bgColor: "bg-gradient-to-r from-amber-400/20 to-amber-600/20 border-amber-400/30",
       minRating: 4.8,
-      coinsPerMin: 8,
+      coinsPerMin: 70,
     },
     gold: {
       label: "GOLD",
@@ -149,7 +150,7 @@ export function getTierInfo(tier: string) {
       color: "text-yellow-400",
       bgColor: "bg-gradient-to-r from-yellow-400/20 to-yellow-600/20 border-yellow-400/30",
       minRating: 4.5,
-      coinsPerMin: 7,
+      coinsPerMin: 62,
     },
     silver: {
       label: "SILVER",
@@ -157,7 +158,7 @@ export function getTierInfo(tier: string) {
       color: "text-slate-300",
       bgColor: "bg-gradient-to-r from-slate-300/20 to-slate-500/20 border-slate-300/30",
       minRating: 4.0,
-      coinsPerMin: 6,
+      coinsPerMin: 55,
     },
     bronze: {
       label: "BRONZE",
@@ -165,7 +166,7 @@ export function getTierInfo(tier: string) {
       color: "text-amber-600",
       bgColor: "bg-gradient-to-r from-amber-600/20 to-amber-800/20 border-amber-600/30",
       minRating: 3.5,
-      coinsPerMin: 5,
+      coinsPerMin: 50,
     },
     standard: {
       label: "STANDARD",
@@ -173,7 +174,7 @@ export function getTierInfo(tier: string) {
       color: "text-muted-foreground",
       bgColor: "bg-muted/50",
       minRating: 0,
-      coinsPerMin: 4,
+      coinsPerMin: 45,
     },
   };
 
@@ -183,11 +184,11 @@ export function getTierInfo(tier: string) {
 // Calculate progress to next tier
 export function getNextTierProgress(currentRating: number, totalRatings: number) {
   const tiers = [
-    { name: "platinum", minRating: 4.8, coinsPerMin: 8 },
-    { name: "gold", minRating: 4.5, coinsPerMin: 7 },
-    { name: "silver", minRating: 4.0, coinsPerMin: 6 },
-    { name: "bronze", minRating: 3.5, coinsPerMin: 5 },
-    { name: "standard", minRating: 0, coinsPerMin: 4 },
+    { name: "platinum", minRating: 4.8, coinsPerMin: 70 },
+    { name: "gold", minRating: 4.5, coinsPerMin: 62 },
+    { name: "silver", minRating: 4.0, coinsPerMin: 55 },
+    { name: "bronze", minRating: 3.5, coinsPerMin: 50 },
+    { name: "standard", minRating: 0, coinsPerMin: 45 },
   ];
 
   // Find current tier and next tier

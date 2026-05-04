@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { coinsToApproxInrAmount, DEFAULT_COINS_PER_MINUTE } from "../_shared/coins-inr.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -81,7 +82,7 @@ Deno.serve(async (req) => {
       const startTime = new Date(call.start_time);
       durationSeconds = Math.floor((endTime.getTime() - startTime.getTime()) / 1000);
       const minutesBilled = Math.ceil(durationSeconds / 60);
-      coinsSpent = minutesBilled * (call.coins_per_minute || 6);
+      coinsSpent = minutesBilled * (call.coins_per_minute || DEFAULT_COINS_PER_MINUTE);
     }
 
     // Cap coins at caller's actual balance
@@ -188,7 +189,7 @@ Deno.serve(async (req) => {
           user_id: call.initiator_id,
           type: "call_deduction",
           coins: coinsSpent,
-          amount: coinsSpent / 6,
+          amount: coinsToApproxInrAmount(coinsSpent),
           status: "completed",
           related_user_id: call.receiver_id,
           related_call_id: callId,
@@ -198,7 +199,7 @@ Deno.serve(async (req) => {
           user_id: call.receiver_id,
           type: "earnings_credit",
           coins: creatorCoins,
-          amount: creatorCoins / 6,
+          amount: coinsToApproxInrAmount(creatorCoins),
           status: "completed",
           related_user_id: call.initiator_id,
           related_call_id: callId,

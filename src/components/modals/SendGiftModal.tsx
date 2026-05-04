@@ -11,6 +11,7 @@ import { useGiftTypes } from "@/hooks/useGiftTypes";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { coinsToApproxInr } from "@/constants/economy";
 
 interface SendGiftModalProps {
   isOpen: boolean;
@@ -80,7 +81,7 @@ export function SendGiftModal({
       user_id: user.id,
       type: "gift_sent",
       coins: selectedGift.coins_cost,
-      amount: Math.round(selectedGift.coins_cost / 6),
+      amount: Math.round(coinsToApproxInr(selectedGift.coins_cost) * 100) / 100,
       status: "completed",
       related_user_id: receiverId,
       description: `Sent ${selectedGift.name} ${selectedGift.emoji} to ${receiverName}`,

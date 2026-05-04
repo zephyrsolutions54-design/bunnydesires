@@ -34,6 +34,7 @@ import { WithdrawalModal } from "@/components/modals/WithdrawalModal";
 import { IncomingCallNotification } from "@/components/IncomingCallNotification";
 import { useRecentActivity, type ActivityItem } from "@/hooks/useRecentActivity";
 import { SEOHead } from "@/components/SEOHead";
+import { DEFAULT_COINS_PER_MINUTE, coinsToApproxInr } from "@/constants/economy";
 import { ActivityListSkeleton } from "@/components/skeletons/DashboardSkeleton";
 
 const formatTimeAgo = (dateStr: string) => {
@@ -99,10 +100,10 @@ const CreatorDashboard = () => {
   };
 
   // Calculate earnings in INR (6 coins = ₹1)
-  const totalEarningsINR = earnings ? (earnings.total_earnings / 6).toFixed(2) : "0.00";
-  const availableBalanceINR = earnings ? (earnings.available_balance / 6).toFixed(2) : "0.00";
-  const callEarningsINR = earnings ? (earnings.call_earnings / 6).toFixed(2) : "0.00";
-  const giftEarningsINR = earnings ? (earnings.gift_earnings / 6).toFixed(2) : "0.00";
+  const totalEarningsINR = earnings ? coinsToApproxInr(earnings.total_earnings).toFixed(2) : "0.00";
+  const availableBalanceINR = earnings ? coinsToApproxInr(earnings.available_balance).toFixed(2) : "0.00";
+  const callEarningsINR = earnings ? coinsToApproxInr(earnings.call_earnings).toFixed(2) : "0.00";
+  const giftEarningsINR = earnings ? coinsToApproxInr(earnings.gift_earnings).toFixed(2) : "0.00";
 
   const stats = [
     {
@@ -218,7 +219,7 @@ const CreatorDashboard = () => {
             <span>Here's an overview of your earnings and activity.</span>
             <div className="flex items-center gap-1 text-bunny-gold">
               <Coins className="w-4 h-4" />
-              <span className="font-medium">{profile?.current_earnings_rate || 6} coins/min</span>
+              <span className="font-medium">{profile?.current_earnings_rate || DEFAULT_COINS_PER_MINUTE} coins/min</span>
             </div>
           </div>
         </div>

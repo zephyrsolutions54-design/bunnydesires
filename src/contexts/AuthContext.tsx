@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { DEFAULT_COINS_PER_MINUTE } from "@/constants/economy";
 
 type UserGender = "male" | "female";
 type RatingTier = "platinum" | "gold" | "silver" | "bronze" | "standard";
@@ -106,7 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           one_star: rawBreakdown.one_star ?? 0,
         } : null,
         rating_tier: (profileData.rating_tier as RatingTier) || 'standard',
-        current_earnings_rate: profileData.current_earnings_rate ?? 6,
+        current_earnings_rate: profileData.current_earnings_rate ?? DEFAULT_COINS_PER_MINUTE,
       };
 
       setProfile(parsedProfile);

@@ -3,6 +3,7 @@ import { Star, TrendingUp, Trophy, Coins } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useRatings, getTierInfo, getNextTierProgress } from "@/hooks/useRatings";
+import { coinsToApproxInr } from "@/constants/economy";
 import { formatDistanceToNow } from "date-fns";
 
 interface RatingDashboardProps {
@@ -44,8 +45,8 @@ export function RatingDashboard({ userId }: RatingDashboardProps) {
     one: (breakdown.one_star / totalRatings) * 100,
   };
 
-  // Calculate earnings per hour (6 coins = ₹1, 60 minutes)
-  const earningsPerHour = (stats.currentEarningsRate * 60) / 6;
+  // Approximate INR earned if fully booked for one hour at current per-minute rate
+  const earningsPerHour = coinsToApproxInr(stats.currentEarningsRate * 60);
 
   return (
     <Card className="bg-card border-border/50">

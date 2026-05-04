@@ -32,6 +32,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { SEOHead } from "@/components/SEOHead";
 import { CreatorGridSkeleton } from "@/components/skeletons/CreatorCardSkeleton";
+import { DEFAULT_COINS_PER_MINUTE } from "@/constants/economy";
 
 const countries = ["All Countries", "India", "Brazil", "Japan", "Spain", "Ukraine", "Germany", "USA", "UK"];
 
@@ -83,7 +84,7 @@ const BrowsePage = () => {
       }
 
       const currentBalance = wallet?.balance || 0;
-      const coinsPerMinute = creator?.current_earnings_rate || 6;
+      const coinsPerMinute = creator?.current_earnings_rate || DEFAULT_COINS_PER_MINUTE;
       if (currentBalance < coinsPerMinute) {
         toast.error(`Not enough coins. You need at least ${coinsPerMinute} coins.`);
         return;
@@ -448,7 +449,7 @@ const BrowsePage = () => {
                             </div>
                             <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-black/50 text-bunny-gold text-xs font-medium">
                               <Coins className="w-3 h-3" />
-                              {creator.current_earnings_rate || 6}/min
+                              {creator.current_earnings_rate || DEFAULT_COINS_PER_MINUTE}/min
                             </div>
                           </div>
                         </div>

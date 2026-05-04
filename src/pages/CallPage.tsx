@@ -32,6 +32,7 @@ import { toast } from "sonner";
 import { SendGiftModal } from "@/components/modals/SendGiftModal";
 import { RatingModal } from "@/components/rating/RatingModal";
 import { useTranslation, SUPPORTED_LANGUAGES } from "@/hooks/useTranslation";
+import { coinsToApproxInr } from "@/constants/economy";
 
 interface CallInfo {
   callId: string;
@@ -398,7 +399,7 @@ function CallRoom({
             user_id: user.id,
             type: "call_deduction",
             coins: coinsSpent,
-            amount: Math.round(coinsSpent / 6),
+            amount: Math.round(coinsToApproxInr(coinsSpent) * 100) / 100,
             status: "completed",
             related_user_id: callInfo.receiver.id,
             related_call_id: callInfo.callId,

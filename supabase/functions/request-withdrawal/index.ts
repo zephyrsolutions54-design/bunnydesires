@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { coinsToApproxInrAmount, COINS_PER_INR_ESTIMATE } from "../_shared/coins-inr.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -6,7 +7,8 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const MIN_WITHDRAWAL_COINS = 3000;
+/** ~₹1000 minimum at COINS_PER_INR_ESTIMATE */
+const MIN_WITHDRAWAL_COINS = Math.ceil(1000 * COINS_PER_INR_ESTIMATE);
 
 interface WithdrawalRequest {
   amount: number; // in coins
@@ -71,7 +73,9 @@ Deno.serve(async (req) => {
 
     if (amount < MIN_WITHDRAWAL_COINS) {
       return new Response(
-        JSON.stringify({ error: `Minimum withdrawal is ${MIN_WITHDRAWAL_COINS} coins (₹${MIN_WITHDRAWAL_COINS / 6})` }),
+        JSON.stringify({
+          error: `Minimum withdrawal is ${MIN_WITHDRAWAL_COINS} coins (≈₹${coinsToApproxInrAmount(MIN_WITHDRAWAL_COINS)})`,
+        }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -115,7 +119,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    const amountInr = amount / 6;
+    const amountInr = coinsToApproxInrAmount(amount);
 
     // Deduct from available balance
     const { error: updateError } = await adminClient

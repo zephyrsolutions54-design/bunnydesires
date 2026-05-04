@@ -13,6 +13,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { coinsToApproxInr } from "@/constants/economy";
 
 interface WithdrawalModalProps {
   isOpen: boolean;
@@ -32,7 +33,7 @@ export function WithdrawalModal({ isOpen, onClose }: WithdrawalModalProps) {
   const [isSuccess, setIsSuccess] = useState(false);
 
   const availableCoins = earnings?.available_balance || 0;
-  const availableInr = (availableCoins / 6).toFixed(2);
+  const availableInr = coinsToApproxInr(availableCoins).toFixed(2);
 
   const handleSubmit = async () => {
     if (!paymentDetail.trim()) {

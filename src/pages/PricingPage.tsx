@@ -1,13 +1,17 @@
 import PageLayout from "@/components/landing/PageLayout";
 import { Check } from "lucide-react";
 import { useCoinPackages } from "@/hooks/useCoinPackages";
+import { coinsToApproxInr } from "@/constants/economy";
 
 const giftPricing = [
-  { emoji: "🌹", name: "Rose", coins: 50, inr: "₹8" },
-  { emoji: "💝", name: "Gift Box", coins: 200, inr: "₹33" },
-  { emoji: "💎", name: "Diamond", coins: 500, inr: "₹83" },
-  { emoji: "👑", name: "Crown", coins: 1000, inr: "₹167" },
-];
+  { emoji: "🌹", name: "Rose", coins: 550 },
+  { emoji: "💝", name: "Gift Box", coins: 2200 },
+  { emoji: "💎", name: "Diamond", coins: 5500 },
+  { emoji: "👑", name: "Crown", coins: 11000 },
+].map((g) => ({
+  ...g,
+  inr: `≈₹${Math.round(coinsToApproxInr(g.coins)).toLocaleString("en-IN")}`,
+}));
 
 const PricingPage = () => {
   const { packages, loading: isLoading } = useCoinPackages();
@@ -46,10 +50,15 @@ const PricingPage = () => {
       </section>
 
       <section className="space-y-4">
-        <h2 className="font-display text-2xl font-semibold">Chat Rates</h2>
-        <div className="glass rounded-xl p-6 border border-border/30">
-          <p className="text-muted-foreground">
-            <strong className="text-foreground">10 coins per minute</strong> = approximately ₹1.67/min = ₹100/hour
+        <h2 className="font-display text-2xl font-semibold">Video chat rates</h2>
+        <div className="glass rounded-xl p-6 border border-border/30 space-y-2 text-muted-foreground">
+          <p>
+            <strong className="text-foreground">45–70 coins per minute</strong> depending on the creator’s rating tier
+            (standard through platinum).
+          </p>
+          <p>
+            At typical coin-pack value, that’s roughly{" "}
+            <strong className="text-foreground">₹21–33 per minute</strong> of video (before gifts).
           </p>
         </div>
       </section>

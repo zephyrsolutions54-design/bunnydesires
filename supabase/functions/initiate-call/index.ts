@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { DEFAULT_COINS_PER_MINUTE } from "../_shared/coins-inr.ts";
 import * as jose from "https://deno.land/x/jose@v5.2.0/index.ts";
 
 const corsHeaders = {
@@ -138,7 +139,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    const coinsPerMinute = receiver.current_earnings_rate || 6;
+    const coinsPerMinute = receiver.current_earnings_rate || DEFAULT_COINS_PER_MINUTE;
 
     // Check wallet
     const { data: wallet } = await adminClient

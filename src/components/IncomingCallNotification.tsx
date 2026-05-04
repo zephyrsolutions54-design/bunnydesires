@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { DEFAULT_COINS_PER_MINUTE } from "@/constants/economy";
 
 interface IncomingCall {
   id: string;
@@ -62,7 +63,7 @@ export function IncomingCallNotification() {
             callerName: caller?.name || "Someone",
             callerAvatar: caller?.avatar_url || null,
             callerLanguage: caller?.language || "en",
-            coinsPerMinute: call.coins_per_minute || 6,
+            coinsPerMinute: call.coins_per_minute || DEFAULT_COINS_PER_MINUTE,
           });
         }
       )

@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { coinsToApproxInrAmount } from "../_shared/coins-inr.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -200,7 +201,7 @@ Deno.serve(async (req) => {
         user_id: user.id,
         type: "gift_sent",
         coins: giftType.coins_cost,
-        amount: giftType.coins_cost / 6,
+        amount: coinsToApproxInrAmount(giftType.coins_cost),
         status: "completed",
         related_user_id: receiverId,
         related_call_id: callId || null,
@@ -210,7 +211,7 @@ Deno.serve(async (req) => {
         user_id: receiverId,
         type: "gift_received",
         coins: creatorCoins,
-        amount: creatorCoins / 6,
+        amount: coinsToApproxInrAmount(creatorCoins),
         status: "completed",
         related_user_id: user.id,
         related_call_id: callId || null,
