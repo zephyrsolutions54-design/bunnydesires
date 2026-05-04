@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { 
   Heart, 
   Mail, 
@@ -40,6 +41,7 @@ const AuthPage = () => {
   );
   const [showPassword, setShowPassword] = useState(false);
   const [gender, setGender] = useState<Gender>(null);
+  const [confirmedAge21, setConfirmedAge21] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -73,6 +75,7 @@ const AuthPage = () => {
   useEffect(() => {
     if (mode === "signup") {
       setGender(null);
+      setConfirmedAge21(false);
     }
   }, [mode]);
 
@@ -119,6 +122,10 @@ const AuthPage = () => {
       if (!gender) {
         newErrors.gender = "Please select your gender";
       }
+
+      if (!confirmedAge21) {
+        newErrors.age = "You must confirm you are 21 years of age or older to create an account.";
+      }
     }
 
     setErrors(newErrors);
@@ -136,7 +143,13 @@ const AuthPage = () => {
 
     try {
       if (mode === "signup") {
-        const { error } = await signUp(formData.email, formData.password, formData.name, gender!);
+        const { error } = await signUp(
+          formData.email,
+          formData.password,
+          formData.name,
+          gender!,
+          confirmedAge21
+        );
         
         if (error) {
           if (error.message.includes("already registered")) {
@@ -271,7 +284,10 @@ const AuthPage = () => {
                         <button
                           key={option.value}
                           type="button"
-                          onClick={() => setGender(option.value)}
+                          onClick={() => {
+                            setGender(option.value);
+                            if (errors.gender) setErrors((prev) => ({ ...prev, gender: "" }));
+                          }}
                           className={`relative p-4 rounded-xl border-2 transition-all text-left ${
                             gender === option.value
                               ? "border-primary bg-primary/5"
@@ -291,6 +307,9 @@ const AuthPage = () => {
                         </button>
                       ))}
                     </div>
+                    {errors.gender ? (
+                      <p className="text-sm text-destructive">{errors.gender}</p>
+                    ) : null}
                   </div>
 
                   {/* Name */}
@@ -375,6 +394,29 @@ const AuthPage = () => {
                 </div>
               )}
 
+              {mode === "signup" && (
+                <div className="space-y-2">
+                  <div className="flex items-start gap-3 rounded-xl border border-border/80 bg-muted/30 p-4">
+                    <Checkbox
+                      id="age21"
+                      checked={confirmedAge21}
+                      onCheckedChange={(checked) => {
+                        setConfirmedAge21(checked === true);
+                        if (errors.age) setErrors((prev) => ({ ...prev, age: "" }));
+                      }}
+                      className="mt-0.5"
+                    />
+                    <label
+                      htmlFor="age21"
+                      className="text-sm leading-snug cursor-pointer select-none"
+                    >
+                      I confirm that I am <span className="font-semibold">21 years of age or older</span>.
+                    </label>
+                  </div>
+                  {errors.age ? <p className="text-sm text-destructive">{errors.age}</p> : null}
+                </div>
+              )}
+
               {mode === "signin" && (
                 <div className="flex justify-end">
                   <Link 
@@ -417,7 +459,7 @@ const AuthPage = () => {
                   <Link to="/privacy" className="text-primary hover:underline">
                     Privacy Policy
                   </Link>
-                  . You must be 18+ to use this service.
+                  . You must be 21 or older to use this service.
                 </p>
               )}
             </motion.form>

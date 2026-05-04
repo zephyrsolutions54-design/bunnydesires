@@ -15,11 +15,22 @@ import {
   Save,
   MapPin,
   LogOut,
+  Trash2,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const countries = [
   "India", "Brazil", "Japan", "Spain", "Ukraine", "Germany",
@@ -46,6 +57,8 @@ const ProfilePage = () => {
   });
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -144,6 +157,26 @@ const ProfilePage = () => {
   const handleSignOut = async () => {
     await signOut();
     navigate("/");
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!profile) return;
+    setIsDeleting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("delete-account", { body: {} });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      await signOut();
+      toast.success("Your account has been deleted.");
+      setDeleteDialogOpen(false);
+      navigate("/", { replace: true });
+    } catch (err) {
+      console.error("Delete account error:", err);
+      toast.error(err instanceof Error ? err.message : "Could not delete account. Try again or contact support.");
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const backPath = profile?.gender === "female" ? "/dashboard" : "/browse";
@@ -337,6 +370,54 @@ const ProfilePage = () => {
               {isSaving ? "Saving..." : "Save Changes"}
             </Button>
           </div>
+
+          <div className="bg-card rounded-2xl p-6 shadow-card border border-destructive/30 mt-6">
+            <h2 className="font-semibold text-lg text-destructive mb-1">Delete account</h2>
+            <p className="text-sm text-muted-foreground mb-4">
+              Permanently remove your profile, wallet, and login. This cannot be undone.
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full border-destructive/50 text-destructive hover:bg-destructive/10 hover:text-destructive"
+              onClick={() => setDeleteDialogOpen(true)}
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete my account
+            </Button>
+          </div>
+
+          <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  All of your data will be permanently deleted, including your profile, messages, and
+                  wallet balance. You will not be able to recover this account.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleDeleteAccount();
+                  }}
+                  disabled={isDeleting}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  {isDeleting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin inline" />
+                      Deleting…
+                    </>
+                  ) : (
+                    "Yes, delete my account"
+                  )}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </motion.div>
       </main>
     </div>
